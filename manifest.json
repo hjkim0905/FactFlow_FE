@@ -1,0 +1,10 @@
+{
+    "manifest_version": 3,
+    "name": "FactFlow Extension",
+    "version": "1.0",
+    "description": "Next.js UI를 사용하는 팝업 익스텐션",
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "permissions": ["tabs"]
+}
