@@ -26,7 +26,8 @@ export interface AnalysisResult {
 	difficulty: any;
 	expression: any;
 	thinking_questions: any;
-	historical_connection: any;
+	//historical_connection: any;
+	complementary_insight: any;
 }
 
 export interface NewsAnalysisResponse {
@@ -40,3 +41,16 @@ export interface NewsAnalysisResponse {
 }
 
 export type SupportedAIModel = "gemini" | "gpt" | "claude";
+
+export type NewsItem = {
+
+	title: string;
+	originallink: string;
+	description: string;
+};
+
+export type ProcessedNews = {
+	title: string;
+	url: string;
+	summary: string;
+};

@@ -10,11 +10,16 @@ import { KeywordExtractionChain } from "@/lib/langchains/chais/keywordExtraction
 import { DifficultyAnalysisChain } from "@/lib/langchains/chais/difficiltyAnalysisChain";
 import { ExpressionAnalysisChain } from "@/lib/langchains/chais/expressionAnalysisChain";
 import { ThinkingQuestionChain } from "@/lib/langchains/chais/thinkingQuestionChain";
-import { HistoricalConnectionChain } from "@/lib/langchains/chais/historicalConnectionChain";
+//import { HistoricalConnectionChain } from "@/lib/langchains/chais/historicalConnectionChain";
+//import { HistoricalNewsPipeline } from "@/lib/pipelines/HistoricalNewsPipeline"; //
+import { ComplementaryInsightChain } from "@/lib/langchains/chais/complementaryInsightChain";
 import type {
 	SupportedAIModel,
 	NewsAnalysisResponse,
 } from "@/types/newAnalysis";
+
+import { fetchSimilarNews } from "@/lib/langchains/utils/fetchSimilarNews";
+
 
 export const ContentExtractor = {
 	extractFromUrl,
@@ -31,8 +36,11 @@ export class NewsAnalysisService {
 		difficulty: DifficultyAnalysisChain;
 		expression: ExpressionAnalysisChain;
 		questions: ThinkingQuestionChain;
-		historical: HistoricalConnectionChain;
+		//historical: HistoricalConnectionChain;
+		complementary: ComplementaryInsightChain;
 	};
+
+	//private historicalPipeline: HistoricalNewsPipeline;
 
 	constructor(modelType?: SupportedAIModel, apiKey?: string) {
 		if (modelType && apiKey) {
@@ -45,6 +53,7 @@ export class NewsAnalysisService {
 
 		console.log(`🤖 ${this.modelType.toUpperCase()} AI 모델 초기화`);
 		this.initializeChains();
+		//this.historicalPipeline = new HistoricalNewsPipeline(this.model);
 	}
 
 	private initializeChains(): void {
@@ -55,7 +64,8 @@ export class NewsAnalysisService {
 			difficulty: new DifficultyAnalysisChain(this.model),
 			expression: new ExpressionAnalysisChain(this.model),
 			questions: new ThinkingQuestionChain(this.model),
-			historical: new HistoricalConnectionChain(this.model),
+			//historical: new HistoricalConnectionChain(this.model),
+			complementary: new ComplementaryInsightChain(this.model),
 		};
 		console.log("✅ 모든 체인 초기화 완료");
 	}
@@ -107,9 +117,9 @@ export class NewsAnalysisService {
 	}
 
 	private async runAllAnalyses(content: string, title = "") {
-		const input = { content, title };
+		const input = { content, title};
 		const results: any = {};
-
+		console.log("input : ", input);
 		console.log("📊 전체 분석 실행 중...");
 
 		// 순차적으로 모든 분석 실행
@@ -144,10 +154,45 @@ export class NewsAnalysisService {
 				this.chains.questions.invoke(input),
 			);
 
-			console.log("7/7 - 과거 연관 분석");
-			results.historical_connection = await this.executeWithRetry(() =>
-				this.chains.historical.invoke(input),
+			// console.log("7/7 - 과거 연관 분석");
+			// results.historical_connection = await this.executeWithRetry(() =>
+			// 	this.chains.historical.invoke(input),
+			// );
+
+			// 3/7에서 추출된 키워드가 다음과 같이 있다고 가정
+			// const extractedKeywords: string[] = results.keywords?.high_importance?.map(k => k.keyword) || [];
+			//
+			// results.historical_connection = await this.executeWithRetry(() =>
+			// 	this.chains.historical.invoke({
+			// 		...input,
+			// 		keywords: extractedKeywords.join(", "), // prompt에 문자열로 넣기 쉽게 조합
+			// 	})
+			//);
+
+			// ✅ Historical + Complementary 공통 input 준비
+			const summary = results.summary?.text || input.content.slice(0, 300);
+			const keywords = results.keywords?.high_importance?.map(k => k.keyword) || [];
+
+			console.log("📂 관련 기사 검색");
+			const similarArticles = await fetchSimilarNews(summary, keywords);
+
+			// console.log("7/8 - 과거 유사 사건 분석");
+			// results.historical_connection = await this.historicalPipeline.run({
+			// 	originalSummary: summary,
+			// 	keywords,
+			// 	similarArticles,
+			// });
+
+			console.log("7/7 - 배경/보완 기사 추천");
+			results.complementary_insight = await this.executeWithRetry(() =>
+				this.chains.complementary.run({
+					articles: similarArticles,
+					keywords,
+				})
 			);
+
+
+
 		} catch (error) {
 			console.error("분석 중 오류:", error);
 		}
@@ -194,8 +239,7 @@ export class NewsAnalysisService {
 				return await this.chains.expression.invoke(input);
 			case "questions":
 				return await this.chains.questions.invoke(input);
-			case "historical":
-				return await this.chains.historical.invoke(input);
+			//case "historical": return await this.chains.historical.invoke(input);
 			default:
 				throw new Error(`지원하지 않는 분석 유형: ${type}`);
 		}

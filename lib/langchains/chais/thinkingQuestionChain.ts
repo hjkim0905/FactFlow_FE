@@ -9,7 +9,7 @@ export class ThinkingQuestionChain extends BaseAnalysisChain {
             
             기사 내용: {content}
             
-            JSON 형식으로 출력:
+            JSON 형식으로 출력, 요청 형식은 아래 JSON 구조를 **엄격하게** 따라야 합니다. (마지막 쉼표 금지, 쌍따옴표 사용):
             {{
                 "causal_questions": [
                     "원인 분석 질문1",

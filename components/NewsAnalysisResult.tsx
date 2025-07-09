@@ -140,6 +140,79 @@ export default function NewsAnalysisResults({ result }: Props) {
 				</div>
 			)}
 
+			{/* Keyword Analysis */}
+			{analysis.keywords && (
+				<div className="mt-8 p-6 border rounded-lg bg-white shadow-md text-black">
+					<h2 className="text-2xl font-bold mb-4">🔑 키워드 분석</h2>
+
+					{["high_importance", "medium_importance", "low_importance"].map((level) => {
+						const levelTitle =
+							level === "high_importance"
+								? "매우 중요"
+								: level === "medium_importance"
+									? "중간 중요도"
+									: "낮은 중요도";
+
+						const keywords = analysis.keywords[level];
+
+						return keywords.length > 0 ? (
+							<div key={level} className="mb-6">
+								<h3 className="text-lg font-semibold mb-2">{levelTitle}</h3>
+								<ul className="space-y-2">
+									{keywords.map((item: { keyword: string; description: string; color: string }, idx: number) => (
+										<li
+											key={idx}
+											className="p-4 rounded-lg border"
+											style={{ borderColor: item.color, backgroundColor: `${item.color}20` }}
+										>
+											<div className="font-bold text-black">{item.keyword}</div>
+											<div className="text-sm text-black">{item.description}</div>
+										</li>
+									))}
+								</ul>
+							</div>
+						) : null;
+					})}
+				</div>
+			)}
+
+
+			{/* Expression Analysis */}
+			{analysis.expression && (
+				<div className="mt-8 p-6 border rounded-lg bg-white shadow-md text-black">
+					<h2 className="text-2xl font-bold mb-4">🧠 표현 방식 분석</h2>
+
+					{/* 감성 비율 */}
+					<div className="mb-4">
+						<h3 className="font-semibold mb-2">감성 비율 (%)</h3>
+						<ul className="space-y-1">
+							<li>😊 긍정: {analysis.expression.emotional_analysis.positive_ratio}%</li>
+							<li>😠 부정: {analysis.expression.emotional_analysis.negative_ratio}%</li>
+							<li>😐 중립: {analysis.expression.emotional_analysis.neutral_ratio}%</li>
+						</ul>
+					</div>
+
+					{/* 객관성 및 주관성 */}
+					<div className="mb-4">
+						<h3 className="font-semibold mb-2">표현 점수</h3>
+						<ul className="space-y-1">
+							<li>📏 객관성 점수 (1~5): {analysis.expression.objectivity_score}</li>
+							<li>🧭 객관적 진술 비율: {analysis.expression.percentage_of_objective_statement}%</li>
+							<li>💬 주관적 진술 비율: {analysis.expression.percentage_of_subjective_statement}%</li>
+						</ul>
+					</div>
+
+					{/* 기타 지표 */}
+					<div>
+						<h3 className="font-semibold mb-2">기타 지표</h3>
+						<ul className="space-y-1">
+							<li>📣 선정성 점수 (1~5): {analysis.expression.sensationalism_score}</li>
+							<li>⚖️ 편향 점수 (1~5): {analysis.expression.bias_score}</li>
+						</ul>
+					</div>
+				</div>
+			)}
+
 			{/* 과거 연관 분석 */}
 			{analysis.historical_connection && (
 				<div className="bg-white border rounded-lg p-6">
@@ -166,6 +239,12 @@ export default function NewsAnalysisResults({ result }: Props) {
 													<span className="text-sm text-black">
 														{event.date}
 													</span>
+
+												</div>
+												<div>
+													<h4 className="font-medium text-black">
+														{event.link}
+													</h4>
 												</div>
 												<p className="text-sm text-black mb-2">
 													{event.similarity}
@@ -197,6 +276,48 @@ export default function NewsAnalysisResults({ result }: Props) {
 					</div>
 				</div>
 			)}
+			{/* 보완적 인사이트 추천 */}
+			{analysis.complementary_insight && (
+				<div className="bg-white border rounded-lg p-6">
+					<h2 className="text-xl font-bold mb-4 text-black">🧩 보완적 인사이트</h2>
+					<div className="space-y-4">
+						{analysis.complementary_insight.recommended_articles &&
+							analysis.complementary_insight.recommended_articles.length > 0 && (
+								<div>
+									<h3 className="font-semibold mb-3 text-black">추천 기사 목록</h3>
+									<ul className="space-y-2">
+										{analysis.complementary_insight.recommended_articles.map(
+											(article: any, index: number) => (
+												<li key={index} className="p-4 bg-blue-50 border border-blue-200 rounded">
+													<h4 className="font-medium text-black">{article.title}</h4>
+													<a
+														href={article.url}
+														target="_blank"
+														rel="noopener noreferrer"
+														className="text-sm text-blue-600 underline"
+													>
+														{article.url}
+													</a>
+													<p className="text-sm text-black mt-2">{article.summary}</p>
+												</li>
+											)
+										)}
+									</ul>
+								</div>
+							)}
+						{analysis.complementary_insight.recommendation_reason && (
+							<div className="mt-4">
+								<h3 className="font-semibold text-black mb-2">선정 이유</h3>
+								<p className="text-sm text-black">{analysis.complementary_insight.recommendation_reason}</p>
+							</div>
+						)}
+					</div>
+				</div>
+			)}
+
+
+
+
 
 			{/* 공유 기능 */}
 			<div className="bg-blue-50 border border-blue-200 rounded-lg p-6">

@@ -10,7 +10,7 @@ export class TitleRewriteChain extends BaseAnalysisChain {
             기사 제목: {title}
             기사 내용: {content}
             
-            JSON 형식으로 출력:
+            JSON 형식으로 출력, 요청 형식은 아래 JSON 구조를 **엄격하게** 따라야 합니다. (마지막 쉼표 금지, 쌍따옴표 사용):
             {{
                 "original_title": "원본 제목",
                 "rewritten_title": "재구성된 제목", 

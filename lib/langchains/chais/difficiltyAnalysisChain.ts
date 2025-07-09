@@ -9,11 +9,11 @@ export class DifficultyAnalysisChain extends BaseAnalysisChain {
             
             기사 내용: {content}
             
-            JSON 형식으로 출력:
+            JSON 형식으로 출력. 요청 형식은 아래 JSON 구조를 **엄격하게** 따라야 합니다. (마지막 쉼표 금지, 쌍따옴표 사용):
             {{
                 "level": "초급|중급|고급",
-                "score": 1-10,
-                "icon": "🟢|🟡|🔴",
+                "score": 1-5,
+                "icon": "⭐️|⭐️⭐️|⭐️⭐️⭐️|⭐️⭐️⭐️⭐️|⭐️⭐️⭐️⭐️⭐️",
                 "reading_tips": [
                     "이해를 돕는 팁1",
                     "이해를 돕는 팁2"
