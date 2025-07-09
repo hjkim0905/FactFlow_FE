@@ -1,36 +1,31 @@
-'use client';
-import { useState } from 'react';
+"use client";
+
+import NewsAnalysisForm from "@/components/NewsAnalysisForm";
+import NewsAnalysisResults from "@/components/NewsAnalysisResult";
+import { useNewsAnalysis } from "@/lib/hooks/LangChain/util";
 
 export default function Home() {
-    const [testResult, setTestResult] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+	const { analyzeNews, loading, error, progress, clearError, result } =
+		useNewsAnalysis();
+	console.log(result);
 
-    async function handleTestApi() {
-        setLoading(true);
-        setTestResult(null);
-        try {
-            const res = await fetch('/api/test', { method: 'POST' });
-            const data = await res.json();
-            setTestResult(data.message ?? JSON.stringify(data));
-        } catch (e) {
-            setTestResult('Error: ' + (e instanceof Error ? e.message : String(e)));
-        } finally {
-            setLoading(false);
-        }
-    }
+	return (
+		<main className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+			<div className="container mx-auto py-8 px-4">
+				<NewsAnalysisForm
+					analyzeNews={analyzeNews}
+					loading={loading}
+					error={error}
+					progress={progress}
+					clearError={clearError}
+				/>
 
-    return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-8">
-            <button
-                onClick={handleTestApi}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                disabled={loading}
-            >
-                {loading ? '테스트중...' : '테스트하기'}
-            </button>
-            {testResult && (
-                <div className="mt-4 p-4 bg-white rounded shadow text-gray-800 max-w-xl break-all">{testResult}</div>
-            )}
-        </div>
-    );
+				{result && (
+					<div className="mt-16">
+						<NewsAnalysisResults result={result} />
+					</div>
+				)}
+			</div>
+		</main>
+	);
 }
