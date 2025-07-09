@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "FactFlow Extension",
+    "name": "NEWSEE",
     "version": "1.0",
-    "description": "Next.js UI를 사용하는 사이드 패널 익스텐션",
+    "description": "NEWSEE 사이드 패널 익스텐션",
     "permissions": ["sidePanel"],
     "side_panel": {
         "default_path": "sidepanel.html",
