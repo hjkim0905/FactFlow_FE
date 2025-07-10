@@ -80,3 +80,23 @@ export interface ComplementaryArticle {
     summary: string;
     source: string;
 }
+
+// 추가: AI 모델 타입
+export type SupportedAIModel = 'gemini' | 'gpt' | 'claude';
+
+// 추가: 뉴스 아이템 타입
+export type NewsItem = {
+    title: string;
+    originallink: string;
+    description: string;
+};
+
+// 추가: 처리된 뉴스 타입
+export type ProcessedNews = {
+    title: string;
+    url: string;
+    summary: string;
+};
+
+// 추가: 분석 결과 타입(필요시 확장)
+export type AnalysisResult = NewsAnalysisResponse['analysis'];
