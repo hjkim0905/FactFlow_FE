@@ -41,7 +41,13 @@ export default function NewsAnalysisResults({ result }: { result: unknown }) {
                 three_sentences={r.analysis.summary.three_sentences}
                 difficulty={r.analysis.difficulty}
             />
-            <KeywordHighlight keywords={r.analysis.keywords.high_importance} />
+            <KeywordHighlight
+                keywords={[
+                    ...r.analysis.keywords.high_importance,
+                    ...r.analysis.keywords.medium_importance,
+                    ...r.analysis.keywords.low_importance,
+                ].slice(0, 8)}
+            />
             <EmotionMix
                 positive={r.analysis.expression.emotional_analysis.positive_ratio}
                 negative={r.analysis.expression.emotional_analysis.negative_ratio}
