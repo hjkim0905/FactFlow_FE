@@ -1,17 +1,17 @@
-import { RunnableSequence } from "@langchain/core/runnables";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { BaseAnalysisChain } from "./baseAnalysisChain";
+import { RunnableSequence } from '@langchain/core/runnables';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { BaseAnalysisChain } from './baseAnalysisChain';
 
 // 📌 기사 타입 정의
 type ProcessedNews = {
-	title: string;
-	url: string;
-	summary: string;
+    title: string;
+    url: string;
+    summary: string;
 };
 
 export class ComplementaryInsightChain extends BaseAnalysisChain {
-	protected buildChain(): RunnableSequence {
-		const prompt = PromptTemplate.fromTemplate(`
+    protected buildChain(): RunnableSequence {
+        const prompt = PromptTemplate.fromTemplate(`
 다음은 하나의 뉴스 주제와 관련된 여러 기사입니다. 
 이 중에서 직접적으로 유사한 사건은 아니더라도,
 - 이슈의 배경을 잘 설명하거나
@@ -42,53 +42,51 @@ export class ComplementaryInsightChain extends BaseAnalysisChain {
 {keywords}
     `);
 
-		return RunnableSequence.from([prompt, this.model, this.outputParser]);
-	}
+        return RunnableSequence.from([prompt, this.model, this.outputParser]);
+    }
 
-	protected parseResult(result: string): unknown {
-		return this.parseJsonSafely(result, {
-			complementary_articles: [],
-			insight: "보완적 분석 없음",
-		});
-	}
+    protected parseResult(result: string): unknown {
+        return this.parseJsonSafely(result, {
+            complementary_articles: [],
+            insight: '보완적 분석 없음',
+        });
+    }
 
-	// ✅ 실행 함수: ProcessedNews[]를 받아 article 목록 텍스트 구성
-	async run(input: {
-		articles: ProcessedNews[];
-		keywords: string[];
-	}): Promise<unknown> {
-		console.log("🔍 ComplementaryInsightChain 입력 확인:");
-		console.log("📊 articles 길이:", input.articles.length);
-		console.log("📊 keywords 길이:", input.keywords.length);
+    // ✅ 실행 함수: ProcessedNews[]를 받아 article 목록 텍스트 구성
+    async run(input: { articles: ProcessedNews[]; keywords: string[] }): Promise<unknown> {
+        console.log('🔍 ComplementaryInsightChain 입력 확인:');
+        console.log('📊 articles 길이:', input.articles.length);
+        console.log('📊 keywords 길이:', input.keywords.length);
 
-		if (input.articles.length === 0 || input.keywords.length === 0) {
-			console.log("⚠️ articles 또는 keywords가 비어있어 기본값 반환");
-			return {
-				complementary_articles: [],
-				insight: "관련 기사나 키워드가 없어 보완 분석을 제공할 수 없습니다.",
-			};
-		}
+        if (input.articles.length === 0 || input.keywords.length === 0) {
+            console.log('⚠️ articles 또는 keywords가 비어있어 기본값 반환');
+            return {
+                complementary_articles: [],
+                insight: '관련 기사나 키워드가 없어 보완 분석을 제공할 수 없습니다.',
+            };
+        }
 
-		const articleList = input.articles
-			.map((a, i) => `${i + 1}. ${a.title}\n요약: ${a.summary}\n링크: ${a.url}`)
-			.join("\n\n");
+        const articleList =
+            input.articles && input.articles.length > 0
+                ? input.articles.map((a, i) => `${i + 1}. ${a.title}\n요약: ${a.summary}\n링크: ${a.url}`).join('\n\n')
+                : '없음';
 
-		console.log("📝 articleList 길이:", articleList.length);
-		console.log("📝 keywords 문자열:", input.keywords.join(", "));
+        console.log('📝 articleList 길이:', articleList.length);
+        console.log('📝 keywords 문자열:', input.keywords.join(', '));
 
-		try {
-			const result = await this.chain.invoke({
-				articles: articleList,
-				keywords: input.keywords.join(", "),
-			});
-			return this.parseResult(result);
-		} catch (error: unknown) {
-			console.error(`${this.constructor.name} 실행 오류:`, error);
-			// 오류 발생 시 기본값 반환
-			return {
-				complementary_articles: [],
-				insight: "보완 분석 중 오류가 발생했습니다.",
-			};
-		}
-	}
+        try {
+            const result = await this.chain.invoke({
+                articles: articleList || '없음',
+                keywords: input.keywords && input.keywords.length > 0 ? input.keywords.join(', ') : '없음',
+            });
+            return this.parseResult(result);
+        } catch (error: unknown) {
+            console.error(`${this.constructor.name} 실행 오류:`, error);
+            // 오류 발생 시 기본값 반환
+            return {
+                complementary_articles: [],
+                insight: '보완 분석 중 오류가 발생했습니다.',
+            };
+        }
+    }
 }

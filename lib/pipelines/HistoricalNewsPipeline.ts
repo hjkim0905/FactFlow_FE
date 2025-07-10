@@ -121,9 +121,15 @@ export class HistoricalNewsPipeline {
         // ✅ 유사도 상위 5개 추출
         const top5 = scored.sort((a, b) => b.score - a.score).slice(0, 5);
 
-        const articleSummaries = top5
-            .map((a, i) => `${i + 1}. ${a.title} - ${a.summary} (유사도: ${a.score.toFixed(2)})\n링크: ${a.source}`)
-            .join('\n');
+        const articleSummaries =
+            top5.length > 0
+                ? top5
+                      .map(
+                          (a, i) =>
+                              `${i + 1}. ${a.title} - ${a.summary} (유사도: ${a.score.toFixed(2)})\n링크: ${a.source}`
+                      )
+                      .join('\n')
+                : '없음';
 
         console.log('🧾 final llm input check:', {
             summary: input.originalSummary,
@@ -134,7 +140,7 @@ export class HistoricalNewsPipeline {
         const result = await chain.invoke({
             summary: input.originalSummary,
             keywords: input.keywords.join(', '),
-            articles: articleSummaries,
+            articles: articleSummaries || '없음',
         });
 
         return result;
