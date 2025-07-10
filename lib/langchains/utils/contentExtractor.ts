@@ -82,19 +82,74 @@ function extractAuthor($: cheerio.CheerioAPI): string {
 	return "";
 }
 
+// function extractPublishDate($: cheerio.CheerioAPI): string {
+// 	// 1. 네이버 뉴스 형식 우선 처리
+// 	const naverDate = $('span.media_end_head_info_datestamp_time._ARTICLE_DATE_TIME').attr('data-date-time');
+// 	if (naverDate) {
+// 		return naverDate.trim();
+// 	}
+// 	// 2. 일반적인 datetime 속성
+// 	const selectors = [".date", ".publish-date", "time[datetime]"];
+//
+// 	for (const selector of selectors) {
+// 		const dateElement = $(selector).first();
+// 		const date = dateElement.attr("datetime") || dateElement.text().trim();
+// 		if (date) {
+// 			return date;
+// 		}
+// 	}
+// 	// 3. body 전체에서 패턴 검색 (fallback)
+// 	const bodyText = $("body").text();
+// 	const fallbackMatch = bodyText.match(/\b\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2}\b/);
+// 	if (fallbackMatch) {
+// 		return fallbackMatch[0].replace(/-/g, ".").replace(/\//g, ".");
+// 	}
+//
+// 	return "";
+// }
 function extractPublishDate($: cheerio.CheerioAPI): string {
-	const selectors = [".date", ".publish-date", "time[datetime]"];
+	const normalizeDate = (input: string): string => {
+		// 1. YYYY.MM.DD 또는 YYYY-MM-DD 또는 YYYY/MM/DD 추출
+		const match = input.match(/\b(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})\b/);
+		if (!match) return "";
+
+		const [, year, month, day] = match;
+		// padStart로 항상 두 자리로 맞춤
+		return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+	};
+
+	// 1. 네이버 뉴스 우선 처리 (data-date-time)
+	const naverDate = $('span.media_end_head_info_datestamp_time._ARTICLE_DATE_TIME').attr('data-date-time');
+	if (naverDate) {
+		return normalizeDate(naverDate.trim());
+	}
+
+	// 2. 일반적인 날짜 셀렉터 처리
+	const selectors = [".date", ".publish-date", "time[datetime]", "time"];
 
 	for (const selector of selectors) {
-		const dateElement = $(selector).first();
-		const date = dateElement.attr("datetime") || dateElement.text().trim();
-		if (date) {
-			return date;
+		const el = $(selector).first();
+		const attrDate = el.attr("datetime");
+		const textDate = el.text().trim();
+
+		if (attrDate) {
+			const normalized = normalizeDate(attrDate);
+			if (normalized) return normalized;
+		}
+
+		if (textDate) {
+			const normalized = normalizeDate(textDate);
+			if (normalized) return normalized;
 		}
 	}
+
+	// 3. fallback - body 전체에서 검색
+	const bodyText = $("body").text();
+	const fallback = normalizeDate(bodyText);
+	if (fallback) return fallback;
+
 	return "";
 }
-
 function extractMainContent($: cheerio.CheerioAPI): string {
 	// 불필요한 요소 제거
 	$("script, style, nav, header, footer, aside, .ad").remove();
