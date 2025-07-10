@@ -206,6 +206,7 @@ export class NewsAnalysisService {
 			let similarArticles: ProcessedNews[] = [];
 			try {
 				similarArticles = await fetchSimilarNews(summary, keywords);
+				console.log("📊 검색된 기사 수:", similarArticles.length);
 			} catch (error) {
 				console.warn("⚠️ 관련 기사 검색 실패, 빈 배열 사용:", error);
 				similarArticles = [];
@@ -222,14 +223,23 @@ export class NewsAnalysisService {
 			console.log("📊 similarArticles 길이:", similarArticles.length);
 			console.log("📊 keywords:", keywords);
 
+			// 배포 환경에서 네이버 API 키가 없을 수 있으므로 더 안전하게 처리
 			if (similarArticles.length > 0 && keywords.length > 0) {
 				console.log("✅ 보완 분석 실행");
-				results.complementary_insight = await this.executeWithRetry(() =>
-					this.chains.complementary.run({
-						articles: similarArticles,
-						keywords,
-					}),
-				);
+				try {
+					results.complementary_insight = await this.executeWithRetry(() =>
+						this.chains.complementary.run({
+							articles: similarArticles,
+							keywords,
+						}),
+					);
+				} catch (error) {
+					console.warn("⚠️ 보완 분석 실패, 기본값 사용:", error);
+					results.complementary_insight = {
+						complementary_articles: [],
+						insight: "보완 분석을 제공할 수 없습니다.",
+					};
+				}
 			} else {
 				console.log(
 					"⚠️ 관련 기사가 없거나 키워드가 없어 보완 분석을 건너뜁니다.",
