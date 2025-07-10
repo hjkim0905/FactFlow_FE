@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import CoreSummary from './result/CoreSummary';
-import KeywordHighlight from './result/KeywordHighlight';
-import EmotionMix from './result/EmotionMix';
-import RelatedArticles from './result/RelatedArticles';
-import ThinkingQuestions from './result/ThinkingQuestions';
-import ReconsiderationPoint from './result/ReconsiderationPoint';
-import DeepConnectionInfo from './result/DeepConnectionInfo';
-import type { NewsAnalysisResponse } from '../types/newsAnalysisResponse';
+import CoreSummary from "./result/CoreSummary";
+import KeywordHighlight from "./result/KeywordHighlight";
+import EmotionMix from "./result/EmotionMix";
+import RelatedArticles from "./result/RelatedArticles";
+import ThinkingQuestions from "./result/ThinkingQuestions";
+import ReconsiderationPoint from "./result/ReconsiderationPoint";
+import DeepConnectionInfo from "./result/DeepConnectionInfo";
+import type { NewsAnalysisResponse } from "../types/newsAnalysisResponse";
 import type { Dispatch, SetStateAction } from "react";
 import vector from "@/public/Vector.svg";
 import Image from "next/image";
@@ -32,11 +32,11 @@ export default function NewsAnalysisResults({
 	loading,
 	clearResult,
 }: Props) {
-	  const { metadata, extracted_content, analysis, share_info } = result;
-    const r = result as NewsAnalysisResponse;
-    return (
-        <div className="flex flex-col ">
-        			{/* 헤더와 새로운 URL 입력 */}
+	const { metadata, extracted_content, analysis, share_info } = result;
+	const r = result as NewsAnalysisResponse;
+	return (
+		<div className="flex flex-col ">
+			{/* 헤더와 새로운 URL 입력 */}
 			<div>
 				<div className="flex flex-col items-center mb-4">
 					<div className="relative flex items-center gap-2">
@@ -64,67 +64,75 @@ export default function NewsAnalysisResults({
 					<p className="text-[10px] font-bold tracking-wide">NEWSEE</p>
 				</header>
 			</div>
-            {/* 카테고리 라벨 */}
-            <div className="flex justify-center items-center w-full">
-                <div
-                    className="border border-blue-500 rounded-full w-12 h-5 mb-2 flex items-center justify-center box-border"
-                    style={{ minWidth: '3rem', minHeight: '1.1875rem' }}
-                >
-                    <span className="font-bold text-[0.705rem] leading-[0.8125rem] text-[#4C4C4C] font-pretendard">
-                        정치
-                    </span>
-                </div>
-            </div>
-            {/* 기사 제목 (rewritten_title) */}
-            <div className="w-[16.125rem] max-w-full mx-auto text-center font-bold font-pretendard text-[1.25rem] leading-[1.46] tracking-tight text-[#323232] break-keep mb-4 ">
-                {r.analysis.title_rewrite.rewritten_title}
-            </div>
-            {/* 기사 입력일 */}
-            <div className="w-[16.125rem] max-w-full mx-auto text-left font-pretendard text-[0.7rem] leading-[0.687rem] text-[#979797] mb-1 font-normal pl-2">
-                기사입력 {r.extracted_content.publishDate}
-            </div>
-            {/* 기자명 */}
-            <div className="w-[16.125rem] max-w-full mx-auto text-left font-pretendard text-[0.7rem] leading-[0.687rem] text-[#979797] font-normal pl-2">
-                김현지 기자
-            </div>
-            <CoreSummary
-                summary={r.analysis.summary.one_sentence}
-                three_sentences={r.analysis.summary.three_sentences}
-                difficulty={r.analysis.difficulty}
-            />
-            <KeywordHighlight
-                keywords={[
-                    ...r.analysis.keywords.high_importance,
-                    ...r.analysis.keywords.medium_importance,
-                    ...r.analysis.keywords.low_importance,
-                ].slice(0, 8)}
-            />
-            <EmotionMix
-                objectivePercent={r.analysis.expression['percentage of objective statement']}
-                subjectivePercent={r.analysis.expression['percentage of subjective statement']}
-            />
-            <RelatedArticles
-                articles={r.analysis.complementary_insight.complementary_articles.map((a) => ({
-                    title: a.title,
-                    url: a.source,
-                    summary: a.summary,
-                }))}
-            />
-            <ThinkingQuestions
-                questions={[
-                    ...(r.analysis.thinking_questions.causal_questions || []),
-                    ...(r.analysis.thinking_questions.prediction_questions || []),
-                    ...(r.analysis.thinking_questions.perspective_questions || []),
-                ]}
-            />
-            <ReconsiderationPoint points={r.analysis.summary.five_sentences} />
-            <DeepConnectionInfo
-                infos={r.analysis.complementary_insight.complementary_articles.map((a) => ({
-                    title: a.title,
-                    description: a.why_useful,
-                    url: a.source,
-                }))}
-            />
-        </div>
-    );
+			{/* 카테고리 라벨 */}
+			<div className="flex justify-center items-center w-full">
+				<div
+					className="border border-blue-500 rounded-full w-12 h-5 mb-2 flex items-center justify-center box-border"
+					style={{ minWidth: "3rem", minHeight: "1.1875rem" }}
+				>
+					<span className="font-bold text-[0.705rem] leading-[0.8125rem] text-[#4C4C4C] font-pretendard">
+						정치
+					</span>
+				</div>
+			</div>
+			{/* 기사 제목 (rewritten_title) */}
+			<div className="w-[16.125rem] max-w-full mx-auto text-center font-bold font-pretendard text-[1.25rem] leading-[1.46] tracking-tight text-[#323232] break-keep mb-4 ">
+				{r.analysis.title_rewrite.rewritten_title}
+			</div>
+			{/* 기사 입력일 */}
+			<div className="w-[16.125rem] max-w-full mx-auto text-left font-pretendard text-[0.7rem] leading-[0.687rem] text-[#979797] mb-1 font-normal pl-2">
+				기사입력 {r.extracted_content.publishDate}
+			</div>
+			{/* 기자명 */}
+			<div className="w-[16.125rem] max-w-full mx-auto text-left font-pretendard text-[0.7rem] leading-[0.687rem] text-[#979797] font-normal pl-2">
+				김현지 기자
+			</div>
+			<CoreSummary
+				summary={r.analysis.summary.one_sentence}
+				three_sentences={r.analysis.summary.three_sentences}
+				difficulty={r.analysis.difficulty}
+			/>
+			<KeywordHighlight
+				keywords={[
+					...r.analysis.keywords.high_importance,
+					...r.analysis.keywords.medium_importance,
+					...r.analysis.keywords.low_importance,
+				].slice(0, 8)}
+			/>
+			<EmotionMix
+				objectivePercent={
+					r.analysis.expression["percentage of objective statement"]
+				}
+				subjectivePercent={
+					r.analysis.expression["percentage of subjective statement"]
+				}
+			/>
+			<RelatedArticles
+				articles={r.analysis.complementary_insight.complementary_articles.map(
+					(a) => ({
+						title: a.title,
+						url: a.source,
+						summary: a.summary,
+					}),
+				)}
+			/>
+			<ThinkingQuestions
+				questions={[
+					...(r.analysis.thinking_questions.causal_questions || []),
+					...(r.analysis.thinking_questions.prediction_questions || []),
+					...(r.analysis.thinking_questions.perspective_questions || []),
+				]}
+			/>
+			<ReconsiderationPoint points={r.analysis.summary.five_sentences} />
+			<DeepConnectionInfo
+				infos={r.analysis.complementary_insight.complementary_articles.map(
+					(a) => ({
+						title: a.title,
+						description: a.why_useful,
+						url: a.source,
+					}),
+				)}
+			/>
+		</div>
+	);
 }
