@@ -57,9 +57,24 @@ export class ComplementaryInsightChain extends BaseAnalysisChain {
 		articles: ProcessedNews[];
 		keywords: string[];
 	}): Promise<unknown> {
+		console.log("🔍 ComplementaryInsightChain 입력 확인:");
+		console.log("📊 articles 길이:", input.articles.length);
+		console.log("📊 keywords 길이:", input.keywords.length);
+
+		if (input.articles.length === 0 || input.keywords.length === 0) {
+			console.log("⚠️ articles 또는 keywords가 비어있어 기본값 반환");
+			return {
+				complementary_articles: [],
+				insight: "관련 기사나 키워드가 없어 보완 분석을 제공할 수 없습니다.",
+			};
+		}
+
 		const articleList = input.articles
 			.map((a, i) => `${i + 1}. ${a.title}\n요약: ${a.summary}\n링크: ${a.url}`)
 			.join("\n\n");
+
+		console.log("📝 articleList 길이:", articleList.length);
+		console.log("📝 keywords 문자열:", input.keywords.join(", "));
 
 		try {
 			const result = await this.chain.invoke({
@@ -69,7 +84,11 @@ export class ComplementaryInsightChain extends BaseAnalysisChain {
 			return this.parseResult(result);
 		} catch (error: unknown) {
 			console.error(`${this.constructor.name} 실행 오류:`, error);
-			throw error;
+			// 오류 발생 시 기본값 반환
+			return {
+				complementary_articles: [],
+				insight: "보완 분석 중 오류가 발생했습니다.",
+			};
 		}
 	}
 }

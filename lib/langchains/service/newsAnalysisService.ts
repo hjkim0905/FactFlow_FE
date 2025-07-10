@@ -219,7 +219,11 @@ export class NewsAnalysisService {
 			// });
 
 			console.log("7/7 - 배경/보완 기사 추천");
-			if (similarArticles.length > 0) {
+			console.log("📊 similarArticles 길이:", similarArticles.length);
+			console.log("📊 keywords:", keywords);
+
+			if (similarArticles.length > 0 && keywords.length > 0) {
+				console.log("✅ 보완 분석 실행");
 				results.complementary_insight = await this.executeWithRetry(() =>
 					this.chains.complementary.run({
 						articles: similarArticles,
@@ -227,7 +231,9 @@ export class NewsAnalysisService {
 					}),
 				);
 			} else {
-				console.log("⚠️ 관련 기사가 없어 보완 분석을 건너뜁니다.");
+				console.log(
+					"⚠️ 관련 기사가 없거나 키워드가 없어 보완 분석을 건너뜁니다.",
+				);
 				results.complementary_insight = {
 					complementary_articles: [],
 					insight: "관련 기사를 찾을 수 없어 보완 분석을 제공할 수 없습니다.",
