@@ -1,69 +1,50 @@
-import { useState } from "react";
-import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
-
+import { useState, useEffect } from "react";
+import vector from "@/public/Vector.svg";
+import Image from "next/image";
 export default function NewsAnalysisForm({
 	analyzeNews,
 	loading,
 	error,
-	progress,
-	clearError,
 }: {
 	analyzeNews: (url: string) => Promise<void>;
 	loading: boolean;
 	error: string | null;
-	progress: { current: number; total: number; currentStep: string };
-	clearError: () => void;
 }) {
 	const [url, setUrl] = useState("");
+
+	// URL이 들어오면 자동 분석
+	useEffect(() => {
+		if (url?.startsWith("http") && !loading) {
+			analyzeNews(url);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [url]);
 
 	// URL 붙여넣으면 자동 분석
 	const handlePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
 		const pasted = e.clipboardData.getData("Text");
 		setUrl(pasted);
-		if (pasted.startsWith("http")) {
-			await analyzeNews(pasted);
-		}
-	};
-
-	// 복사 버튼 클릭 시 안내
-	const handleCopyClick = () => {
-		navigator.clipboard.writeText(url);
-		alert("URL이 복사되었습니다!");
 	};
 
 	return (
 		<div className="flex flex-col items-center mt-16">
 			<div className="flex flex-col items-center mb-8">
-				<div className="flex items-center gap-2">
-					<span className="text-lg font-bold text-black border-2 border-blue-400 rounded-full px-6 py-3 bg-white shadow">
-						원하는 기사 URL을 복사만 하세요!
-					</span>
-					<button
-						type="button"
-						className="ml-2 p-2 rounded-full border-2 border-blue-400 bg-white hover:bg-blue-50"
-						onClick={handleCopyClick}
-						aria-label="URL 복사"
-					>
-						<ClipboardDocumentIcon className="w-7 h-7 text-blue-500" />
-					</button>
+				<div className="relative flex items-center gap-2">
+					<input
+						type="url"
+						className="w-[225px] text-[11.281px] font-bold text-black border-2 border-[#0073FF] rounded-full px-6 py-3 bg-white shadow"
+						placeholder="원하는 기사 URL을 복사만 하세요!"
+						value={url}
+						onChange={(e) => setUrl(e.target.value)}
+						onPaste={handlePaste}
+						disabled={loading}
+					/>
+					<div className="absolute top-1/8 right-[-20px] -translate-y-1/2 w-[41px] h-[36px] bg-[#0073FF] rounded-full flex items-center justify-center border-2 border-[#0073FF]">
+						<Image src={vector} alt="분석 버튼" className="w-[22px] h-[24px]" />
+					</div>
 				</div>
 			</div>
-			<input
-				type="url"
-				className="w-full max-w-md p-4 border-2 border-blue-400 rounded-lg text-black text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
-				placeholder="https://news.example.com/article"
-				value={url}
-				onChange={(e) => setUrl(e.target.value)}
-				onPaste={handlePaste}
-				disabled={loading}
-			/>
-			<button
-				className="w-full max-w-md bg-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition"
-				onClick={() => analyzeNews(url)}
-				disabled={loading || !url.trim()}
-			>
-				🚀 뉴스 분석 시작
-			</button>
+
 			{error && <div className="mt-4 text-red-600 font-semibold">{error}</div>}
 		</div>
 	);
