@@ -39,30 +39,49 @@ export default function NewsAnalysisResults({
 	loading,
 	clearResult,
 }: Props) {
+	// result가 undefined일 수 있으므로 안전하게 처리
+	if (!result || !result.analysis || !result.extracted_content) {
+		console.warn("⚠️ result가 유효하지 않습니다:", result);
+		return (
+			<div className="flex flex-col items-center justify-center min-h-screen">
+				<p className="text-red-500">분석 결과를 불러올 수 없습니다.</p>
+			</div>
+		);
+	}
+
 	// 타입 단언 및 구조 분해
 	const { analysis, extracted_content } = result;
 
-	const titleRewrite = analysis.title_rewrite as { rewritten_title: string };
-	const summary = analysis.summary as {
+	const titleRewrite = (analysis.title_rewrite as {
+		rewritten_title: string;
+	}) || { rewritten_title: "제목 없음" };
+	const summary = (analysis.summary as {
 		one_sentence: string;
 		three_sentences: string[];
 		five_sentences: string[];
-	};
-	const keywords = analysis.keywords as {
+	}) || { one_sentence: "요약 없음", three_sentences: [], five_sentences: [] };
+	const keywords = (analysis.keywords as {
 		high_importance: Keyword[];
 		medium_importance: Keyword[];
 		low_importance: Keyword[];
-	};
-	const difficulty = analysis.difficulty as { level: string; score: number };
-	const expression = analysis.expression as { [key: string]: number };
-	const thinkingQuestions = analysis.thinking_questions as {
+	}) || { high_importance: [], medium_importance: [], low_importance: [] };
+	const difficulty = (analysis.difficulty as {
+		level: string;
+		score: number;
+	}) || { level: "보통", score: 0 };
+	const expression = (analysis.expression as { [key: string]: number }) || {};
+	const thinkingQuestions = (analysis.thinking_questions as {
 		causal_questions?: string[];
 		prediction_questions?: string[];
 		perspective_questions?: string[];
+	}) || {
+		causal_questions: [],
+		prediction_questions: [],
+		perspective_questions: [],
 	};
-	const complementaryInsight = analysis.complementary_insight as {
+	const complementaryInsight = (analysis.complementary_insight as {
 		complementary_articles: ComplementaryArticle[];
-	};
+	}) || { complementary_articles: [] };
 
 	return (
 		<div className="flex flex-col ">
@@ -113,11 +132,11 @@ export default function NewsAnalysisResults({
 			</div>
 			{/* 기사 입력일 */}
 			<div className="w-[16.125rem] max-w-full mx-auto text-left font-pretendard text-[0.7rem] leading-[0.687rem] text-[#979797] mb-1 font-normal pl-2">
-				기사입력 {extracted_content.publish_date}
+				기사입력 {extracted_content.publish_date || "날짜 없음"}
 			</div>
 			{/* 기자명 */}
 			<div className="w-[16.125rem] max-w-full mx-auto text-left font-pretendard text-[0.7rem] leading-[0.687rem] text-[#979797] font-normal pl-2">
-				{extracted_content.author}
+				{extracted_content.author || "기자명 없음"}
 			</div>
 			<CoreSummary
 				summary={summary.one_sentence}
