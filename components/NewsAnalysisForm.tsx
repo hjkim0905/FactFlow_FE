@@ -1,7 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import type { SupportedAIModel } from "@/types/newAnalysis";
+import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 
 export default function NewsAnalysisForm({
 	analyzeNews,
@@ -10,150 +8,63 @@ export default function NewsAnalysisForm({
 	progress,
 	clearError,
 }: {
-	analyzeNews: (url: string, model?: SupportedAIModel) => Promise<void>;
+	analyzeNews: (url: string) => Promise<void>;
 	loading: boolean;
 	error: string | null;
 	progress: { current: number; total: number; currentStep: string };
 	clearError: () => void;
 }) {
 	const [url, setUrl] = useState("");
-	const [selectedModel, setSelectedModel] =
-		useState<SupportedAIModel>("gemini");
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-
-		if (!url.trim()) {
-			alert("뉴스 기사 URL을 입력해주세요.");
-			return;
+	// URL 붙여넣으면 자동 분석
+	const handlePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
+		const pasted = e.clipboardData.getData("Text");
+		setUrl(pasted);
+		if (pasted.startsWith("http")) {
+			await analyzeNews(pasted);
 		}
-
-		clearError();
-		await analyzeNews(url.trim(), selectedModel);
 	};
 
-	const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setUrl(e.target.value);
-		if (error) clearError();
+	// 복사 버튼 클릭 시 안내
+	const handleCopyClick = () => {
+		navigator.clipboard.writeText(url);
+		alert("URL이 복사되었습니다!");
 	};
 
 	return (
-		<div className="max-w-4xl mx-auto p-6">
-			<div className="text-center mb-8">
-				<h1 className="text-4xl font-bold mb-4 text-black">
-					📰 AI 뉴스 분석 도구
-				</h1>
-				<p className="text-lg text-black">
-					뉴스 링크만 입력하면 AI가 자동으로 7가지 관점에서 종합 분석합니다
-				</p>
-			</div>
-
-			<form onSubmit={handleSubmit} className="space-y-6">
-				<div>
-					<label
-						htmlFor="url"
-						className="block text-sm font-medium mb-2 text-black"
+		<div className="flex flex-col items-center mt-16">
+			<div className="flex flex-col items-center mb-8">
+				<div className="flex items-center gap-2">
+					<span className="text-lg font-bold text-black border-2 border-blue-400 rounded-full px-6 py-3 bg-white shadow">
+						원하는 기사 URL을 복사만 하세요!
+					</span>
+					<button
+						type="button"
+						className="ml-2 p-2 rounded-full border-2 border-blue-400 bg-white hover:bg-blue-50"
+						onClick={handleCopyClick}
+						aria-label="URL 복사"
 					>
-						📎 뉴스 기사 URL
-					</label>
-					<input
-						type="url"
-						id="url"
-						value={url}
-						onChange={handleUrlChange}
-						className="w-full p-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-						placeholder="https://news.example.com/article"
-						required
-						disabled={loading}
-					/>
+						<ClipboardDocumentIcon className="w-7 h-7 text-blue-500" />
+					</button>
 				</div>
-
-				<div>
-					<label className="block text-sm font-medium mb-3 text-black">
-						🤖 사용할 AI 모델
-					</label>
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-						{(["gemini", "gpt", "claude"] as SupportedAIModel[]).map(
-							(model) => (
-								<label key={model} className="relative">
-									<input
-										type="radio"
-										name="model"
-										value={model}
-										checked={selectedModel === model}
-										onChange={(e) =>
-											setSelectedModel(e.target.value as SupportedAIModel)
-										}
-										className="sr-only"
-										disabled={loading}
-									/>
-									<div
-										className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-											selectedModel === model
-												? "border-blue-500 bg-blue-50"
-												: "border-gray-300 hover:border-blue-300"
-										}`}
-									>
-										<div className="text-center text-black">
-											<div className="text-2xl mb-2 text-black">
-												{model === "gemini"
-													? "🟢"
-													: model === "gpt"
-														? "🔵"
-														: "🟣"}
-											</div>
-											<div className="font-semibold capitalize text-black">
-												{model}
-											</div>
-											<div className="text-sm text-black">
-												{model === "gemini"
-													? "무료/저렴"
-													: model === "gpt"
-														? "고성능/비쌈"
-														: "균형잡힌 성능"}
-											</div>
-										</div>
-									</div>
-								</label>
-							),
-						)}
-					</div>
-				</div>
-
-				<button
-					type="submit"
-					disabled={loading || !url.trim()}
-					className="w-full bg-blue-600 text-black py-4 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-				>
-					{loading ? (
-						<div className="flex items-center justify-center gap-2 text-black">
-							<div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
-							분석 중...
-						</div>
-					) : (
-						"🚀 뉴스 분석 시작"
-					)}
-				</button>
-			</form>
-
-			{error && (
-				<div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-					<div className="flex items-start gap-3">
-						<div className="text-red-500">❌</div>
-						<div>
-							<h3 className="font-semibold text-black">분석 오류</h3>
-							<p className="text-black">{error}</p>
-							<button
-								type="button"
-								onClick={clearError}
-								className="mt-2 text-sm text-black hover:text-black underline"
-							>
-								오류 메시지 닫기
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
+			</div>
+			<input
+				type="url"
+				className="w-full max-w-md p-4 border-2 border-blue-400 rounded-lg text-black text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
+				placeholder="https://news.example.com/article"
+				value={url}
+				onChange={(e) => setUrl(e.target.value)}
+				onPaste={handlePaste}
+				disabled={loading}
+			/>
+			<button
+				className="w-full max-w-md bg-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition"
+				onClick={() => analyzeNews(url)}
+				disabled={loading || !url.trim()}
+			>
+				🚀 뉴스 분석 시작
+			</button>
+			{error && <div className="mt-4 text-red-600 font-semibold">{error}</div>}
 		</div>
 	);
 }
