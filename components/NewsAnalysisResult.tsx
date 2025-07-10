@@ -33,10 +33,14 @@ export default function NewsAnalysisResults({ result }: { result: unknown }) {
                 기사입력 {r.extracted_content.publishDate}
             </div>
             {/* 기자명 */}
-            <div className="w-[16.125rem] max-w-full mx-auto text-left font-pretendard text-[0.7rem] leading-[0.687rem] text-[#979797] mb-4 font-normal pl-2">
+            <div className="w-[16.125rem] max-w-full mx-auto text-left font-pretendard text-[0.7rem] leading-[0.687rem] text-[#979797] font-normal pl-2">
                 김현지 기자
             </div>
-            <CoreSummary summary={r.analysis.summary.one_sentence} />
+            <CoreSummary
+                summary={r.analysis.summary.one_sentence}
+                three_sentences={r.analysis.summary.three_sentences}
+                difficulty={r.analysis.difficulty}
+            />
             <KeywordHighlight keywords={r.analysis.keywords.high_importance} />
             <EmotionMix
                 positive={r.analysis.expression.emotional_analysis.positive_ratio}
