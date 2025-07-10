@@ -1,17 +1,17 @@
-import { RunnableSequence } from '@langchain/core/runnables';
-import { PromptTemplate } from '@langchain/core/prompts';
-import { BaseAnalysisChain } from './baseAnalysisChain';
+import { RunnableSequence } from "@langchain/core/runnables";
+import { PromptTemplate } from "@langchain/core/prompts";
+import { BaseAnalysisChain } from "./baseAnalysisChain";
 
 // 📌 기사 타입 정의
 type ProcessedNews = {
-    title: string;
-    url: string;
-    summary: string;
+	title: string;
+	url: string;
+	summary: string;
 };
 
 export class ComplementaryInsightChain extends BaseAnalysisChain {
-    protected buildChain(): RunnableSequence {
-        const prompt = PromptTemplate.fromTemplate(`
+	protected buildChain(): RunnableSequence {
+		const prompt = PromptTemplate.fromTemplate(`
 다음은 하나의 뉴스 주제와 관련된 여러 기사입니다. 
 이 중에서 직접적으로 유사한 사건은 아니더라도,
 - 이슈의 배경을 잘 설명하거나
@@ -42,25 +42,34 @@ export class ComplementaryInsightChain extends BaseAnalysisChain {
 {keywords}
     `);
 
-        return RunnableSequence.from([prompt, this.model, this.outputParser]);
-    }
+		return RunnableSequence.from([prompt, this.model, this.outputParser]);
+	}
 
-    protected parseResult(result: string): unknown {
-        return this.parseJsonSafely(result, {
-            complementary_articles: [],
-            insight: '보완적 분석 없음',
-        });
-    }
+	protected parseResult(result: string): unknown {
+		return this.parseJsonSafely(result, {
+			complementary_articles: [],
+			insight: "보완적 분석 없음",
+		});
+	}
 
-    // ✅ 실행 함수: ProcessedNews[]를 받아 article 목록 텍스트 구성
-    async run(input: { articles: ProcessedNews[]; keywords: string[] }): Promise<unknown> {
-        const articleList = input.articles
-            .map((a, i) => `${i + 1}. ${a.title}\n요약: ${a.summary}\n링크: ${a.url}`)
-            .join('\n\n');
+	// ✅ 실행 함수: ProcessedNews[]를 받아 article 목록 텍스트 구성
+	async run(input: {
+		articles: ProcessedNews[];
+		keywords: string[];
+	}): Promise<unknown> {
+		const articleList = input.articles
+			.map((a, i) => `${i + 1}. ${a.title}\n요약: ${a.summary}\n링크: ${a.url}`)
+			.join("\n\n");
 
-        return await this.invoke({
-            content: articleList,
-            title: input.keywords.join(', '),
-        });
-    }
+		try {
+			const result = await this.chain.invoke({
+				articles: articleList,
+				keywords: input.keywords.join(", "),
+			});
+			return this.parseResult(result);
+		} catch (error: unknown) {
+			console.error(`${this.constructor.name} 실행 오류:`, error);
+			throw error;
+		}
+	}
 }
