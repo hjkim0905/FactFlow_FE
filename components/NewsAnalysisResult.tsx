@@ -7,16 +7,14 @@ import RelatedArticles from "./result/RelatedArticles";
 import ThinkingQuestions from "./result/ThinkingQuestions";
 import ReconsiderationPoint from "./result/ReconsiderationPoint";
 import DeepConnectionInfo from "./result/DeepConnectionInfo";
+import Warning from "./result/Warning";
 import type { NewsAnalysisResponse } from "../types/newsAnalysisResponse";
 import type { Dispatch, SetStateAction } from "react";
-import vector from "@/public/Vector.svg";
 import Image from "next/image";
 import vectorimage from "@/public/resultvector.svg";
 
 interface Props {
 	result: NewsAnalysisResponse;
-	url: string;
-	analyzeNews: (url: string) => Promise<void>;
 	setUrl: Dispatch<SetStateAction<string>>;
 	handlePaste: (e: React.ClipboardEvent<HTMLInputElement>) => Promise<void>;
 	loading: boolean;
@@ -25,24 +23,21 @@ interface Props {
 
 export default function NewsAnalysisResults({
 	result,
-	url,
 	setUrl,
 	handlePaste,
-	analyzeNews,
 	loading,
 	clearResult,
 }: Props) {
-	const { metadata, extracted_content, analysis, share_info } = result;
 	const r = result as NewsAnalysisResponse;
 	return (
 		<div className="flex flex-col ">
 			{/* 헤더와 새로운 URL 입력 */}
 			<div>
-				<div className="flex flex-col items-center mb-4">
+				<div className="flex flex-col items-center mt-3 mb-4">
 					<div className="relative flex items-center gap-2">
 						<input
 							type="url"
-							className="w-[275px] text-center h-[31px] text-[11.281px] font-bold text-black border-2 border-[#0073FF] rounded-full px-6 py-3 bg-white shadow pr-12"
+							className="w-[275px] text-center h-[31px] text-[11.281px] font-bold text-[#ADADAD] border-2 border-[#777] rounded-full px-6 py-3 bg-white shadow pr-12"
 							placeholder="기사의 URL 링크를 이곳에 붙여주세요!"
 							onChange={(e) => setUrl(e.target.value)}
 							onPaste={handlePaste}
@@ -58,7 +53,7 @@ export default function NewsAnalysisResults({
 					</div>
 				</div>
 				<header
-					className="bg-blue-600 w-full text-white py-2 text-center font-bold flex flex-col items-center cursor-pointer select-none rounded mb-6"
+					className="bg-blue-600 w-full text-white py-2 text-center font-bold flex flex-col items-center cursor-pointer select-none mb-6"
 					onClick={clearResult}
 				>
 					<p className="text-[10px] font-bold tracking-wide">NEWSEE</p>
@@ -123,7 +118,9 @@ export default function NewsAnalysisResults({
 					...(r.analysis.thinking_questions.perspective_questions || []),
 				]}
 			/>
+			<Warning />
 			<ReconsiderationPoint points={r.analysis.summary.five_sentences} />
+			<Warning />
 			<DeepConnectionInfo
 				infos={r.analysis.complementary_insight.complementary_articles.map(
 					(a) => ({
