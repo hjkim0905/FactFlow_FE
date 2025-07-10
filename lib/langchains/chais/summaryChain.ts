@@ -1,10 +1,10 @@
-import { RunnableSequence } from "@langchain/core/runnables";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { BaseAnalysisChain } from "./baseAnalysisChain";
+import { RunnableSequence } from '@langchain/core/runnables';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { BaseAnalysisChain } from './baseAnalysisChain';
 
 export class SummaryChain extends BaseAnalysisChain {
-	protected buildChain(): RunnableSequence {
-		const summaryPrompt = PromptTemplate.fromTemplate(`
+    protected buildChain(): RunnableSequence {
+        const summaryPrompt = PromptTemplate.fromTemplate(`
             다음 뉴스 기사를 단계별로 요약해주세요.
             
             기사 내용: {content}
@@ -27,18 +27,14 @@ export class SummaryChain extends BaseAnalysisChain {
             }}
         `);
 
-		return RunnableSequence.from([
-			summaryPrompt,
-			this.model,
-			this.outputParser,
-		]);
-	}
+        return RunnableSequence.from([summaryPrompt, this.model, this.outputParser]);
+    }
 
-	protected parseResult(result: string): any {
-		return this.parseJsonSafely(result, {
-			one_sentence: "요약 생성 실패",
-			three_sentences: ["요약 실패"],
-			five_sentences: ["요약 실패"],
-		});
-	}
+    protected parseResult(result: string): unknown {
+        return this.parseJsonSafely(result, {
+            one_sentence: '요약 생성 실패',
+            three_sentences: ['요약 실패'],
+            five_sentences: ['요약 실패'],
+        });
+    }
 }

@@ -11,12 +11,12 @@ export async function GET(req: NextRequest) {
         const { result } = await ogs({ url });
         let image = null;
         if (Array.isArray(result.ogImage)) {
-            const first = (result.ogImage as any[])[0];
+            const first = (result.ogImage as unknown[])[0];
             if (first && typeof first === 'object' && 'url' in first) {
-                image = (first as any).url;
+                image = (first as { url: string }).url;
             }
         } else if (result.ogImage && typeof result.ogImage === 'object' && 'url' in result.ogImage) {
-            image = (result.ogImage as any).url;
+            image = (result.ogImage as { url: string }).url;
         }
         return new Response(JSON.stringify({ image }), { status: 200 });
     } catch {

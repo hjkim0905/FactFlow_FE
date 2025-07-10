@@ -1,10 +1,10 @@
-import { RunnableSequence } from "@langchain/core/runnables";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { BaseAnalysisChain } from "./baseAnalysisChain";
+import { RunnableSequence } from '@langchain/core/runnables';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { BaseAnalysisChain } from './baseAnalysisChain';
 
 export class ThinkingQuestionChain extends BaseAnalysisChain {
-	protected buildChain(): RunnableSequence {
-		const questionPrompt = PromptTemplate.fromTemplate(`
+    protected buildChain(): RunnableSequence {
+        const questionPrompt = PromptTemplate.fromTemplate(`
             다음 뉴스 기사를 읽은 사용자의 비판적 사고를 유도하는 질문을 생성해주세요.
             
             기사 내용: {content}
@@ -26,18 +26,14 @@ export class ThinkingQuestionChain extends BaseAnalysisChain {
             }}
         `);
 
-		return RunnableSequence.from([
-			questionPrompt,
-			this.model,
-			this.outputParser,
-		]);
-	}
+        return RunnableSequence.from([questionPrompt, this.model, this.outputParser]);
+    }
 
-	protected parseResult(result: string): any {
-		return this.parseJsonSafely(result, {
-			causal_questions: [],
-			prediction_questions: [],
-			perspective_questions: [],
-		});
-	}
+    protected parseResult(result: string): unknown {
+        return this.parseJsonSafely(result, {
+            causal_questions: [],
+            prediction_questions: [],
+            perspective_questions: [],
+        });
+    }
 }

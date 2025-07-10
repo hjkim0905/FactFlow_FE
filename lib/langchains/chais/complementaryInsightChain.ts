@@ -1,6 +1,6 @@
-import { RunnableSequence } from "@langchain/core/runnables";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { BaseAnalysisChain } from "./baseAnalysisChain";
+import { RunnableSequence } from '@langchain/core/runnables';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { BaseAnalysisChain } from './baseAnalysisChain';
 
 // 📌 기사 타입 정의
 type ProcessedNews = {
@@ -42,35 +42,25 @@ export class ComplementaryInsightChain extends BaseAnalysisChain {
 {keywords}
     `);
 
-        return RunnableSequence.from([
-            prompt,
-            this.model,
-            this.outputParser,
-        ]);
+        return RunnableSequence.from([prompt, this.model, this.outputParser]);
     }
 
-    protected parseResult(result: string): any {
+    protected parseResult(result: string): unknown {
         return this.parseJsonSafely(result, {
             complementary_articles: [],
-            insight: "보완적 분석 없음",
+            insight: '보완적 분석 없음',
         });
     }
 
     // ✅ 실행 함수: ProcessedNews[]를 받아 article 목록 텍스트 구성
-    async run(input: {
-        articles: ProcessedNews[];
-        keywords: string[];
-    }): Promise<any> {
+    async run(input: { articles: ProcessedNews[]; keywords: string[] }): Promise<unknown> {
         const articleList = input.articles
-            .map(
-                (a, i) =>
-                    `${i + 1}. ${a.title}\n요약: ${a.summary}\n링크: ${a.url}`
-            )
-            .join("\n\n");
+            .map((a, i) => `${i + 1}. ${a.title}\n요약: ${a.summary}\n링크: ${a.url}`)
+            .join('\n\n');
 
         return await this.invoke({
             articles: articleList,
-            keywords: input.keywords.join(", "),
+            keywords: input.keywords.join(', '),
         });
     }
 }

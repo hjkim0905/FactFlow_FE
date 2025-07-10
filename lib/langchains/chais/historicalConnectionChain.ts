@@ -1,10 +1,10 @@
-import { RunnableSequence } from "@langchain/core/runnables";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { BaseAnalysisChain } from "./baseAnalysisChain";
+import { RunnableSequence } from '@langchain/core/runnables';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { BaseAnalysisChain } from './baseAnalysisChain';
 
 export class HistoricalConnectionChain extends BaseAnalysisChain {
-	protected buildChain(): RunnableSequence {
-		const historicalPrompt = PromptTemplate.fromTemplate(`
+    protected buildChain(): RunnableSequence {
+        const historicalPrompt = PromptTemplate.fromTemplate(`
             다음 뉴스 기사와 관련된 과거의 유사한 사건을 분석해주세요.
            최근 기사일수록 상단에 위치하게 정렬해주세요.
 			뉴스 출처는 명확하게 명시해주세요. (가능하면 URL 포함)
@@ -33,18 +33,14 @@ export class HistoricalConnectionChain extends BaseAnalysisChain {
             }}
         `);
 
-		return RunnableSequence.from([
-			historicalPrompt,
-			this.model,
-			this.outputParser,
-		]);
-	}
+        return RunnableSequence.from([historicalPrompt, this.model, this.outputParser]);
+    }
 
-	protected parseResult(result: string): any {
-		return this.parseJsonSafely(result, {
-			similar_events: [],
-			patterns: "분석 실패",
-			lessons: [],
-		});
-	}
+    protected parseResult(result: string): unknown {
+        return this.parseJsonSafely(result, {
+            similar_events: [],
+            patterns: '분석 실패',
+            lessons: [],
+        });
+    }
 }

@@ -1,10 +1,10 @@
-import { RunnableSequence } from "@langchain/core/runnables";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { BaseAnalysisChain } from "./baseAnalysisChain";
+import { RunnableSequence } from '@langchain/core/runnables';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { BaseAnalysisChain } from './baseAnalysisChain';
 
 export class ExpressionAnalysisChain extends BaseAnalysisChain {
-	protected buildChain(): RunnableSequence {
-		const expressionPrompt = PromptTemplate.fromTemplate(`
+    protected buildChain(): RunnableSequence {
+        const expressionPrompt = PromptTemplate.fromTemplate(`
             다음 뉴스 기사의 표현 방식을 분석해주세요.
             
             기사 내용: {content}
@@ -25,23 +25,19 @@ export class ExpressionAnalysisChain extends BaseAnalysisChain {
             }}
         `);
 
-		return RunnableSequence.from([
-			expressionPrompt,
-			this.model,
-			this.outputParser,
-		]);
-	}
+        return RunnableSequence.from([expressionPrompt, this.model, this.outputParser]);
+    }
 
-	protected parseResult(result: string): any {
-		return this.parseJsonSafely(result, {
-			emotional_analysis: {
-				positive_ratio: 33,
-				negative_ratio: 33,
-				neutral_ratio: 34,
-			},
-			objectivity_score: 50,
-			sensationalism_score: 5,
-			bias_score: 5,
-		});
-	}
+    protected parseResult(result: string): unknown {
+        return this.parseJsonSafely(result, {
+            emotional_analysis: {
+                positive_ratio: 33,
+                negative_ratio: 33,
+                neutral_ratio: 34,
+            },
+            objectivity_score: 50,
+            sensationalism_score: 5,
+            bias_score: 5,
+        });
+    }
 }

@@ -1,10 +1,10 @@
-import { RunnableSequence } from "@langchain/core/runnables";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { BaseAnalysisChain } from "./baseAnalysisChain";
+import { RunnableSequence } from '@langchain/core/runnables';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { BaseAnalysisChain } from './baseAnalysisChain';
 
 export class KeywordExtractionChain extends BaseAnalysisChain {
-	protected buildChain(): RunnableSequence {
-		const keywordPrompt = PromptTemplate.fromTemplate(`
+    protected buildChain(): RunnableSequence {
+        const keywordPrompt = PromptTemplate.fromTemplate(`
             다음 뉴스 기사에서 중요한 키워드를 추출하고 중요도별로 분류해주세요.
             
             기사 내용: {content}
@@ -35,18 +35,14 @@ export class KeywordExtractionChain extends BaseAnalysisChain {
             }}
         `);
 
-		return RunnableSequence.from([
-			keywordPrompt,
-			this.model,
-			this.outputParser,
-		]);
-	}
+        return RunnableSequence.from([keywordPrompt, this.model, this.outputParser]);
+    }
 
-	protected parseResult(result: string): any {
-		return this.parseJsonSafely(result, {
-			high_importance: [],
-			medium_importance: [],
-			low_importance: [],
-		});
-	}
+    protected parseResult(result: string): unknown {
+        return this.parseJsonSafely(result, {
+            high_importance: [],
+            medium_importance: [],
+            low_importance: [],
+        });
+    }
 }

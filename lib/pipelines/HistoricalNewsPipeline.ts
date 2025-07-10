@@ -1,17 +1,11 @@
-import { RunnableSequence } from "@langchain/core/runnables";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { StringOutputParser } from "@langchain/core/output_parsers";
-import { z } from "zod";
-import { StructuredOutputParser } from "langchain/output_parsers";
+import { RunnableSequence } from '@langchain/core/runnables';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { StringOutputParser } from '@langchain/core/output_parsers';
+import { z } from 'zod';
+import { StructuredOutputParser } from 'langchain/output_parsers';
 
 // 💡 타입 정의
-type NewsItem = {
-    title: string;
-    link: string;
-    description: string;
-};
-
 type ProcessedNews = {
     title: string;
     url: string;
@@ -33,12 +27,11 @@ type AnalysisResult = {
 export class HistoricalNewsPipeline {
     constructor(
         private readonly model = new ChatGoogleGenerativeAI({
-            model: "models/gemini-pro",
+            model: 'models/gemini-pro',
             apiKey: process.env.GOOGLE_API_KEY,
             temperature: 0.3,
         })
-    ) {
-    }
+    ) {}
 
     // ✅ 유사도 계산 함수
     private async calculateSimilarity(summaryA: string, summaryB: string): Promise<number> {
@@ -50,7 +43,7 @@ export class HistoricalNewsPipeline {
 `);
 
         const chain = prompt.pipe(this.model).pipe(new StringOutputParser());
-        const result = await chain.invoke({a: summaryA, b: summaryB});
+        const result = await chain.invoke({ a: summaryA, b: summaryB });
 
         const score = parseFloat(result.trim());
         return isNaN(score) ? 0 : Math.max(0, Math.min(1, score));
@@ -104,18 +97,13 @@ export class HistoricalNewsPipeline {
                     })
                 )
                 .default([]),
-            patterns: z.string().default("없음"),
+            patterns: z.string().default('없음'),
             lessons: z.array(z.string()).default([]),
         });
 
         const parser = StructuredOutputParser.fromZodSchema(schema);
 
-        const chain = RunnableSequence.from([
-            prompt,
-            this.model,
-            new StringOutputParser(),
-            parser,
-        ]);
+        const chain = RunnableSequence.from([prompt, this.model, new StringOutputParser(), parser]);
 
         // ✅ 유사도 계산
         const scored = await Promise.all(
@@ -134,24 +122,19 @@ export class HistoricalNewsPipeline {
         const top5 = scored.sort((a, b) => b.score - a.score).slice(0, 5);
 
         const articleSummaries = top5
-            .map(
-                (a, i) =>
-                    `${i + 1}. ${a.title} - ${a.summary} (유사도: ${a.score.toFixed(2)})\n링크: ${a.source}`
-            )
-            .join("\n");
+            .map((a, i) => `${i + 1}. ${a.title} - ${a.summary} (유사도: ${a.score.toFixed(2)})\n링크: ${a.source}`)
+            .join('\n');
 
-
-        console.log("🧾 final llm input check:", {
+        console.log('🧾 final llm input check:', {
             summary: input.originalSummary,
-            keywords: input.keywords.join(", "),
+            keywords: input.keywords.join(', '),
             articles: articleSummaries,
         });
 
         const result = await chain.invoke({
             summary: input.originalSummary,
-            keywords: input.keywords.join(", "),
+            keywords: input.keywords.join(', '),
             articles: articleSummaries,
-
         });
 
         return result;

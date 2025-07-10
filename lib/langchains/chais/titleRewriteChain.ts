@@ -1,10 +1,10 @@
-import { RunnableSequence } from "@langchain/core/runnables";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { BaseAnalysisChain } from "./baseAnalysisChain";
+import { RunnableSequence } from '@langchain/core/runnables';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { BaseAnalysisChain } from './baseAnalysisChain';
 
 export class TitleRewriteChain extends BaseAnalysisChain {
-	protected buildChain(): RunnableSequence {
-		const titlePrompt = PromptTemplate.fromTemplate(`
+    protected buildChain(): RunnableSequence {
+        const titlePrompt = PromptTemplate.fromTemplate(`
             다음 뉴스 기사의 제목을 자극적인 표현 없이 이슈 중심으로 객관적으로 다시 작성해주세요.
             
             기사 제목: {title}
@@ -19,15 +19,15 @@ export class TitleRewriteChain extends BaseAnalysisChain {
             }}
         `);
 
-		return RunnableSequence.from([titlePrompt, this.model, this.outputParser]);
-	}
+        return RunnableSequence.from([titlePrompt, this.model, this.outputParser]);
+    }
 
-	protected parseResult(result: string): any {
-		return this.parseJsonSafely(result, {
-			original_title: "제목을 찾을 수 없습니다",
-			rewritten_title: "제목 재구성 실패",
-			removed_expressions: [],
-			change_reason: "분석 실패",
-		});
-	}
+    protected parseResult(result: string): unknown {
+        return this.parseJsonSafely(result, {
+            original_title: '제목을 찾을 수 없습니다',
+            rewritten_title: '제목 재구성 실패',
+            removed_expressions: [],
+            change_reason: '분석 실패',
+        });
+    }
 }
