@@ -9,6 +9,8 @@ interface ThinkingQuestionsProps {
 export default function ThinkingQuestions({
 	questions,
 }: ThinkingQuestionsProps) {
+	// questions가 undefined일 수 있으므로 안전하게 처리
+	const safeQuestions = questions || [];
 	const numImgs = ["/num1.png", "/num2.png", "/num3.png", "/num4.png"];
 	return (
 		<div className="bg-white shadow rounded-lg p-6 text-black">
@@ -17,9 +19,9 @@ export default function ThinkingQuestions({
 				<p className="text-[12px]">사고력을 길러주는 추천 질문이에요!</p>
 			</div>
 			<div className="flex flex-col gap-2">
-				{questions.slice(0, 4).map((q, i) => (
+				{safeQuestions.slice(0, 4).map((q, i) => (
 					<div
-						key={i}
+						key={`question-${i}-${q.substring(0, 10)}`}
 						className="flex items-center border border-[#0073FF] rounded-full px-1 py-1 bg-[#EAEAEA] text-[11px] font-[400] border-[1px]"
 					>
 						{" "}
