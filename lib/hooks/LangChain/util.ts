@@ -20,6 +20,17 @@ interface UseNewsAnalysisReturn {
 	clearError: () => void;
 }
 
+const STAGE_LABELS = [
+	"분석 준비 중...",
+	"웹페이지 내용 추출 중...",
+	"제목 재구성 중...",
+	"요약 생성 중...",
+	"키워드 추출 중...",
+	"난이도 분석 중...",
+	"표현 분석 중...",
+	"분석 완료!",
+];
+
 export const useNewsAnalysis = (): UseNewsAnalysisReturn => {
 	const [result, setResult] = useState<NewsAnalysisResponse | null>(null);
 	const [loading, setLoading] = useState(false);
@@ -32,41 +43,33 @@ export const useNewsAnalysis = (): UseNewsAnalysisReturn => {
 
 	const analyzeNews = useCallback(
 		async (url: string, model?: SupportedAIModel) => {
+			setLoading(true);
+			setError(null);
+			setResult(null);
+			setProgress({ current: 0, total: 7, currentStep: STAGE_LABELS[0] });
+
 			try {
-				setLoading(true);
-				setError(null);
-				setResult(null);
-				setProgress({ current: 0, total: 7, currentStep: "분석 준비 중..." });
-
-				if (!url.trim()) {
-					throw new Error("URL을 입력해주세요.");
-				}
-
+				if (!url.trim()) throw new Error("URL을 입력해주세요.");
 				try {
 					new URL(url);
 				} catch {
 					throw new Error("올바른 URL 형식이 아닙니다.");
 				}
 
-				setProgress({
-					current: 1,
-					total: 7,
-					currentStep: "웹페이지 내용 추출 중...",
-				});
+				// 단계별로 progress를 가짜로 연출
+				for (let i = 1; i <= 6; i++) {
+					await new Promise((res) => setTimeout(res, 2000));
+					setProgress({ current: i, total: 7, currentStep: STAGE_LABELS[i] });
+				}
 
+				// 실제 fetch
 				const response = await fetch("/api/news/analyze", {
 					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
+					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ url, model }),
 				});
 
-				setProgress({
-					current: 5,
-					total: 7,
-					currentStep: "분석 결과 처리 중...",
-				});
+				setProgress({ current: 7, total: 7, currentStep: STAGE_LABELS[7] });
 
 				if (!response.ok) {
 					const errorData = await response.json();
@@ -79,19 +82,20 @@ export const useNewsAnalysis = (): UseNewsAnalysisReturn => {
 				const data = await response.json();
 
 				if (data.success) {
-					setResult(data.data);
-					setProgress({ current: 7, total: 7, currentStep: "분석 완료!" });
+					// 0.4초 후에 결과 화면으로 넘어가도록 delay
+					setTimeout(() => {
+						setResult(data.data);
+						setLoading(false);
+					}, 400);
 				} else {
 					throw new Error(data.error || "분석 중 오류가 발생했습니다.");
 				}
-			} catch (err: any) {
-				const errorMessage =
-					err instanceof Error
-						? err.message
-						: "알 수 없는 오류가 발생했습니다.";
-				setError(errorMessage);
-				console.error("뉴스 분석 오류:", err);
-			} finally {
+			} catch (err: unknown) {
+				if (err instanceof Error) {
+					setError(err.message || "알 수 없는 오류가 발생했습니다.");
+				} else {
+					setError("알 수 없는 오류가 발생했습니다.");
+				}
 				setLoading(false);
 			}
 		},

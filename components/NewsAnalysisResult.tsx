@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import CoreSummary from './result/CoreSummary';
 import KeywordHighlight from './result/KeywordHighlight';
@@ -8,11 +8,62 @@ import ThinkingQuestions from './result/ThinkingQuestions';
 import ReconsiderationPoint from './result/ReconsiderationPoint';
 import DeepConnectionInfo from './result/DeepConnectionInfo';
 import type { NewsAnalysisResponse } from '../types/newsAnalysisResponse';
+import type { Dispatch, SetStateAction } from "react";
+import vector from "@/public/Vector.svg";
+import Image from "next/image";
+import vectorimage from "@/public/resultvector.svg";
 
-export default function NewsAnalysisResults({ result }: { result: unknown }) {
+interface Props {
+	result: NewsAnalysisResponse;
+	url: string;
+	analyzeNews: (url: string) => Promise<void>;
+	setUrl: Dispatch<SetStateAction<string>>;
+	handlePaste: (e: React.ClipboardEvent<HTMLInputElement>) => Promise<void>;
+	loading: boolean;
+	clearResult: () => void;
+}
+
+export default function NewsAnalysisResults({
+	result,
+	url,
+	setUrl,
+	handlePaste,
+	analyzeNews,
+	loading,
+	clearResult,
+}: Props) {
+	  const { metadata, extracted_content, analysis, share_info } = result;
     const r = result as NewsAnalysisResponse;
     return (
         <div className="flex flex-col ">
+        			{/* 헤더와 새로운 URL 입력 */}
+			<div>
+				<div className="flex flex-col items-center mb-4">
+					<div className="relative flex items-center gap-2">
+						<input
+							type="url"
+							className="w-[275px] text-center h-[31px] text-[11.281px] font-bold text-black border-2 border-[#0073FF] rounded-full px-6 py-3 bg-white shadow pr-12"
+							placeholder="기사의 URL 링크를 이곳에 붙여주세요!"
+							onChange={(e) => setUrl(e.target.value)}
+							onPaste={handlePaste}
+							disabled={loading}
+						/>
+						<div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+							<Image
+								src={vectorimage}
+								alt="분석 버튼"
+								className="w-[22px] h-[24px]"
+							/>
+						</div>
+					</div>
+				</div>
+				<header
+					className="bg-blue-600 w-full text-white py-2 text-center font-bold flex flex-col items-center cursor-pointer select-none rounded mb-6"
+					onClick={clearResult}
+				>
+					<p className="text-[10px] font-bold tracking-wide">NEWSEE</p>
+				</header>
+			</div>
             {/* 카테고리 라벨 */}
             <div className="flex justify-center items-center w-full">
                 <div
