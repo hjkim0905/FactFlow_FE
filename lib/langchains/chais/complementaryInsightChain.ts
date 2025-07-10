@@ -59,8 +59,8 @@ export class ComplementaryInsightChain extends BaseAnalysisChain {
             .join('\n\n');
 
         return await this.invoke({
-            articles: articleList,
-            keywords: input.keywords.join(', '),
+            content: articleList,
+            title: input.keywords.join(', '),
         });
     }
 }

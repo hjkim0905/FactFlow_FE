@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { NewsAnalysisService } from '@/lib/langchains/service/newsAnalysisService';
 
-export async function POST(request: NextRequest, { params }: { params: { type: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ type: string }> }) {
+    const { type } = await params;
     try {
-        const { type } = params;
         const { content, title, model } = await request.json();
 
         if (!content) {
@@ -39,12 +39,12 @@ export async function POST(request: NextRequest, { params }: { params: { type: s
             data: result,
         });
     } catch (error: unknown) {
-        console.error(`❌ ${params.type} 분석 오류:`, error);
+        console.error(`❌ ${type} 분석 오류:`, error);
 
         return NextResponse.json(
             {
                 success: false,
-                analysis_type: params.type,
+                analysis_type: type,
                 error: error instanceof Error ? error.message : '분석 중 오류가 발생했습니다.',
                 code: 'ANALYSIS_ERROR',
             },
