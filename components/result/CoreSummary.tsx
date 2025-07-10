@@ -15,6 +15,8 @@ export default function CoreSummary({
 	three_sentences,
 	difficulty,
 }: CoreSummaryProps) {
+	// three_sentences가 undefined일 수 있으므로 안전하게 처리
+	const safeThreeSentences = three_sentences || [];
 	const renderStars = (score: number) => {
 		return Array.from({ length: 5 }, (_, index) => (
 			<svg
@@ -52,11 +54,11 @@ export default function CoreSummary({
 			</div>
 			<div className="relative">
 				<div className="bg-[#0073FF] shadow-[0px_1.61161px_1.61161px_rgba(0,0,0,0.25)] rounded-[0.403rem] w-[19.5rem] h-[50%] p-4 text-white -mt-7.5">
-					{three_sentences ? (
+					{safeThreeSentences.length > 0 ? (
 						<ul className="space-y-1">
-							{three_sentences.map((sentence, index) => (
+							{safeThreeSentences.map((sentence, index) => (
 								<li
-									key={index}
+									key={`sentence-${index}-${sentence.substring(0, 10)}`}
 									className="font-pretendard font-semibold text-[0.755rem] leading-[1rem] text-white flex items-start"
 								>
 									<span className="mr-2">•</span>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 
 interface RelatedArticle {
@@ -13,15 +13,21 @@ interface RelatedArticlesProps {
 
 export default function RelatedArticles({ articles }: RelatedArticlesProps) {
 	// articles가 undefined일 수 있으므로 안전하게 처리
-	const safeArticles = articles || [];
+	const safeArticles = useMemo(() => articles || [], [articles]);
 
 	// 썸네일 상태: 각 기사별로 og:image URL 저장
 	const [thumbnails, setThumbnails] = useState<(string | null)[]>(() =>
-		safeArticles.map(() => null),
+		Array.isArray(safeArticles) ? safeArticles.map(() => null) : [],
 	);
 
 	useEffect(() => {
+		if (!Array.isArray(safeArticles) || safeArticles.length === 0) {
+			return;
+		}
+
 		safeArticles.forEach((article, idx) => {
+			if (!article || !article.url) return;
+
 			fetch(`/api/og-image?url=${encodeURIComponent(article.url)}`)
 				.then((res) => res.json())
 				.then((data) => {
@@ -60,7 +66,7 @@ export default function RelatedArticles({ articles }: RelatedArticlesProps) {
 							color: "#C6C6C6",
 						}}
 					>
-						{articles.length}건
+						{safeArticles.length}건
 					</span>
 				</div>
 				{/* 가로 스크롤 기사 카드 영역 */}

@@ -1,4 +1,4 @@
-~~import { RunnableSequence } from "@langchain/core/runnables";
+import { RunnableSequence } from "@langchain/core/runnables";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { BaseAnalysisChain } from "./baseAnalysisChain";
 

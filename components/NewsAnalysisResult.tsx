@@ -49,8 +49,8 @@ export default function NewsAnalysisResults({
 		);
 	}
 
-	// 타입 단언 및 구조 분해
-	const { analysis, extracted_content } = result;
+	// 타입 단언 및 구조 분해 - 안전한 기본값 설정
+	const { analysis = {}, extracted_content = {} } = result;
 
 	const titleRewrite = (analysis.title_rewrite as {
 		rewritten_title: string;
@@ -159,9 +159,9 @@ export default function NewsAnalysisResults({
 			<RelatedArticles
 				articles={(complementaryInsight.complementary_articles || []).map(
 					(a) => ({
-						title: a.title,
-						url: a.source,
-						summary: a.summary,
+						title: a.title || "",
+						url: a.source || "",
+						summary: a.summary || "",
 					}),
 				)}
 			/>
@@ -177,9 +177,9 @@ export default function NewsAnalysisResults({
 			<Warning />
 			<DeepConnectionInfo
 				infos={(complementaryInsight.complementary_articles || []).map((a) => ({
-					title: a.title,
-					description: a.why_useful,
-					url: a.source,
+					title: a.title || "",
+					description: a.why_useful || "",
+					url: a.source || "",
 				}))}
 			/>
 		</div>
