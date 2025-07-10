@@ -87,7 +87,7 @@ export default function KeywordHighlight({ keywords }: KeywordHighlightProps) {
     ];
 
     return (
-        <div className="bg-white shadow rounded-lg p-6 text-black">
+        <div className="p-6 text-black -mt-5">
             <div className="flex items-center mb-4">
                 <span className="text-[2rem] leading-[1.9375rem] mr-3">👩🏻‍🏫</span>
                 <h2 className="font-pretendard font-bold text-[0.75rem] leading-[0.875rem] text-[#4C4C4C]">
@@ -125,6 +125,15 @@ export default function KeywordHighlight({ keywords }: KeywordHighlightProps) {
                     );
                 })}
             </div>
+            {/* Divider */}
+            <div
+                className="mx-auto mt-7"
+                style={{
+                    width: '312px',
+                    height: '0px',
+                    borderTop: '0.805806px solid #C9C9C9',
+                }}
+            />
         </div>
     );
 }

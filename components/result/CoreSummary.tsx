@@ -25,7 +25,7 @@ export default function CoreSummary({ summary, three_sentences, difficulty }: Co
     };
 
     return (
-        <div className="shadow rounded-lg p-6 text-black">
+        <div className="p-6 text-black">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
                     <Image

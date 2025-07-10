@@ -49,9 +49,8 @@ export default function NewsAnalysisResults({ result }: { result: unknown }) {
                 ].slice(0, 8)}
             />
             <EmotionMix
-                positive={r.analysis.expression.emotional_analysis.positive_ratio}
-                negative={r.analysis.expression.emotional_analysis.negative_ratio}
-                neutral={r.analysis.expression.emotional_analysis.neutral_ratio}
+                objectivePercent={r.analysis.expression['percentage of objective statement']}
+                subjectivePercent={r.analysis.expression['percentage of subjective statement']}
             />
             <RelatedArticles
                 articles={r.analysis.complementary_insight.complementary_articles.map((a) => ({
