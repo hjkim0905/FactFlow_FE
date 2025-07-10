@@ -1,16 +1,63 @@
 "use client";
 
 import type { NewsAnalysisResponse } from "@/types/newAnalysis";
+import type { Dispatch, SetStateAction } from "react";
+import vector from "@/public/Vector.svg";
+import Image from "next/image";
+import vectorimage from "@/public/resultvector.svg";
 
 interface Props {
 	result: NewsAnalysisResponse;
+	url: string;
+	analyzeNews: (url: string) => Promise<void>;
+	setUrl: Dispatch<SetStateAction<string>>;
+	handlePaste: (e: React.ClipboardEvent<HTMLInputElement>) => Promise<void>;
+	loading: boolean;
+	clearResult: () => void;
 }
 
-export default function NewsAnalysisResults({ result }: Props) {
+export default function NewsAnalysisResults({
+	result,
+	url,
+	setUrl,
+	handlePaste,
+	analyzeNews,
+	loading,
+	clearResult,
+}: Props) {
 	const { metadata, extracted_content, analysis, share_info } = result;
 
 	return (
 		<div className="bg-[#F7F7F7] flex flex-col gap-8 py-8">
+			{/* 헤더와 새로운 URL 입력 */}
+			<div>
+				<div className="flex flex-col items-center mb-4">
+					<div className="relative flex items-center gap-2">
+						<input
+							type="url"
+							className="w-[275px] text-center h-[31px] text-[11.281px] font-bold text-black border-2 border-[#0073FF] rounded-full px-6 py-3 bg-white shadow pr-12"
+							placeholder="기사의 URL 링크를 이곳에 붙여주세요!"
+							onChange={(e) => setUrl(e.target.value)}
+							onPaste={handlePaste}
+							disabled={loading}
+						/>
+						<div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+							<Image
+								src={vectorimage}
+								alt="분석 버튼"
+								className="w-[22px] h-[24px]"
+							/>
+						</div>
+					</div>
+				</div>
+				<header
+					className="bg-blue-600 w-full text-white py-2 text-center font-bold flex flex-col items-center cursor-pointer select-none rounded mb-6"
+					onClick={clearResult}
+				>
+					<p className="text-[10px] font-bold tracking-wide">NEWSEE</p>
+				</header>
+			</div>
+
 			{/* 기사 제목 및 메타 정보 */}
 			<div className=" p-6 text-black h-40">
 				<h2 className="text-2xl font-bold mb-2">{extracted_content.title}</h2>
