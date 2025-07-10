@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { NewsAnalysisService } from "@/lib/langchains/services/newsAnalysisService";
+import { NewsAnalysisService } from "@/lib/langchains/service/newsAnalysisService";
 
 export async function POST(
 	request: NextRequest,
