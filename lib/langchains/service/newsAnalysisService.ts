@@ -51,7 +51,6 @@ export class NewsAnalysisService {
 
         console.log(`🤖 ${this.modelType.toUpperCase()} AI 모델 초기화`);
         this.initializeChains();
-        //this.historicalPipeline = new HistoricalNewsPipeline(this.model);
     }
 
     private initializeChains(): void {
@@ -113,127 +112,118 @@ export class NewsAnalysisService {
 
     private async runAllAnalyses(content: string, title = ''): Promise<AnalysisResult> {
         const input = { content, title };
-        const results: Partial<AnalysisResult> = {};
-        console.log('input : ', input);
-        console.log('📊 전체 분석 실행 중...');
+        //const results: Partial<AnalysisResult> = {}; // ✅ 변수 선언 추가
+        const results: Record<string, unknown> = {};
+        console.log('📊 전체 분석 병렬 실행 중...');
 
-        // 순차적으로 모든 분석 실행
-        try {
-            console.log('1/7 - 제목 재구성');
-            results.title_rewrite = (await this.executeWithRetry(() =>
-                this.chains.title.invoke(input)
-            )) as NewsAnalysisResponse['analysis']['title_rewrite'];
+        // 기본 분석들을 먼저 병렬로 실행
+        const basicAnalyses = [
+            'title_rewrite',
+            'summary',
+            'keywords',
+            'difficulty',
+            'expression',
+            'thinking_questions'
+        ] as const;
 
-            console.log('2/7 - 요약 생성');
-            results.summary = (await this.executeWithRetry(() =>
-                this.chains.summary.invoke(input)
-            )) as NewsAnalysisResponse['analysis']['summary'];
-
-            console.log('3/7 - 키워드 추출');
-            results.keywords = (await this.executeWithRetry(() =>
-                this.chains.keywords.invoke(input)
-            )) as NewsAnalysisResponse['analysis']['keywords'];
-
-            console.log('4/7 - 난이도 분석');
-            results.difficulty = (await this.executeWithRetry(() =>
-                this.chains.difficulty.invoke(input)
-            )) as NewsAnalysisResponse['analysis']['difficulty'];
-
-            console.log('5/7 - 표현 분석');
-            results.expression = (await this.executeWithRetry(() =>
-                this.chains.expression.invoke(input)
-            )) as NewsAnalysisResponse['analysis']['expression'];
-
-            console.log('6/7 - 사고 질문 생성');
-            results.thinking_questions = (await this.executeWithRetry(() =>
-                this.chains.questions.invoke(input)
-            )) as NewsAnalysisResponse['analysis']['thinking_questions'];
-
-            // console.log("7/7 - 과거 연관 분석");
-            // results.historical_connection = await this.executeWithRetry(() =>
-            // 	this.chains.historical.invoke(input),
-            // );
-
-            // 3/7에서 추출된 키워드가 다음과 같이 있다고 가정
-            // const extractedKeywords: string[] = results.keywords?.high_importance?.map(k => k.keyword) || [];
-            //
-            // results.historical_connection = await this.executeWithRetry(() =>
-            // 	this.chains.historical.invoke({
-            // 		...input,
-            // 		keywords: extractedKeywords.join(", "), // prompt에 문자열로 넣기 쉽게 조합
-            // 	})
-            //);
-
-            // ✅ Historical + Complementary 공통 input 준비
-            // summary extraction
-            let summary = '';
-            if (results.summary && typeof results.summary === 'object' && 'text' in results.summary) {
-                summary = (results.summary as { text: string }).text;
-            } else {
-                summary = input.content.slice(0, 300);
-            }
-            // keywords extraction
-            let keywords: string[] = [];
-            if (results.keywords && typeof results.keywords === 'object' && 'high_importance' in results.keywords) {
-                const hi = (results.keywords as { high_importance: { keyword: string }[] }).high_importance;
-                if (Array.isArray(hi)) {
-                    keywords = hi.map((k) => k.keyword);
-                }
-            }
-
-            console.log('📂 관련 기사 검색');
-            let similarArticles: ProcessedNews[] = [];
+        const basicTasks = basicAnalyses.map(async (analysisType) => {
             try {
-                similarArticles = await fetchSimilarNews(summary, keywords);
-                console.log('📊 검색된 기사 수:', similarArticles.length);
-            } catch (error) {
-                console.warn('⚠️ 관련 기사 검색 실패, 빈 배열 사용:', error);
-                similarArticles = [];
-            }
-
-            // console.log("7/8 - 과거 유사 사건 분석");
-            // results.historical_connection = await this.historicalPipeline.run({
-            // 	originalSummary: summary,
-            // 	keywords,
-            // 	similarArticles,
-            // });
-
-            console.log('7/7 - 배경/보완 기사 추천');
-            console.log('📊 similarArticles 길이:', similarArticles.length);
-            console.log('📊 keywords:', keywords);
-
-            // 배포 환경에서 네이버 API 키가 없을 수 있으므로 더 안전하게 처리
-            if (similarArticles.length > 0 && keywords.length > 0) {
-                console.log('✅ 보완 분석 실행');
-                try {
-                    results.complementary_insight = (await this.executeWithRetry(() =>
-                        this.chains.complementary.run({
-                            articles: similarArticles,
-                            keywords,
-                        })
-                    )) as NewsAnalysisResponse['analysis']['complementary_insight'];
-                } catch (error) {
-                    console.warn('⚠️ 보완 분석 실패, 기본값 사용:', error);
-                    results.complementary_insight = {
-                        complementary_articles: [],
-                        insight: '보완 분석을 제공할 수 없습니다.',
-                    };
+                let result;
+                switch (analysisType) {
+                    case 'title_rewrite':
+                        result = await this.executeWithRetry(() => this.chains.title.invoke(input));
+                        break;
+                    case 'summary':
+                        result = await this.executeWithRetry(() => this.chains.summary.invoke(input));
+                        break;
+                    case 'keywords':
+                        result = await this.executeWithRetry(() => this.chains.keywords.invoke(input));
+                        break;
+                    case 'difficulty':
+                        result = await this.executeWithRetry(() => this.chains.difficulty.invoke(input));
+                        break;
+                    case 'expression':
+                        result = await this.executeWithRetry(() => this.chains.expression.invoke(input));
+                        break;
+                    case 'thinking_questions':
+                        result = await this.executeWithRetry(() => this.chains.questions.invoke(input));
+                        break;
                 }
+
+                results[analysisType] = result;
+                console.log(`✅ ${analysisType} 완료`);
+            } catch (error) {
+                console.warn(`❌ ${analysisType} 분석 실패:`, error);
+                results[analysisType] = this.getDefaultValue(analysisType);
+            }
+        });
+
+        // 기본 분석들 완료 대기
+        await Promise.all(basicTasks);
+
+        // 🔍 요약/키워드 후속 처리 (기본 분석 결과 필요)
+        let summary = input.content.slice(0, 300); // 기본값
+        if (results.summary && typeof results.summary === 'object' && 'text' in results.summary) {
+            summary = (results.summary as { text: string }).text;
+        }
+
+        let keywords: string[] = [];
+        if (results.keywords && typeof results.keywords === 'object' && 'high_importance' in results.keywords) {
+            keywords = (results.keywords as { high_importance: { keyword: string }[] })
+                .high_importance.map((k) => k.keyword);
+        }
+
+        // 관련 기사 검색
+        let similarArticles: ProcessedNews[] = [];
+        try {
+            similarArticles = await fetchSimilarNews(summary, keywords);
+            console.log('📊 관련 기사 수:', similarArticles.length);
+        } catch (error) {
+            console.warn('⚠️ 관련 기사 검색 실패:', error);
+            similarArticles = [];
+        }
+
+        // ✅ 보완 인사이트 (의존성 있는 분석)
+        try {
+            if (similarArticles.length > 0 && keywords.length > 0) {
+                results.complementary_insight = await this.executeWithRetry(() =>
+                    this.chains.complementary.run({
+                        articles: similarArticles,
+                        keywords,
+                    })
+                ) as NewsAnalysisResponse['analysis']['complementary_insight'];
             } else {
-                console.log('⚠️ 관련 기사가 없거나 키워드가 없어 보완 분석을 건너뜁니다.');
                 results.complementary_insight = {
                     complementary_articles: [],
                     insight: '관련 기사를 찾을 수 없어 보완 분석을 제공할 수 없습니다.',
                 };
             }
-        } catch (error: unknown) {
-            console.error('분석 중 오류:', error);
+        } catch (error) {
+            console.warn('⚠️ 보완 인사이트 실패:', error);
+            results.complementary_insight = {
+                complementary_articles: [],
+                insight: '보완 분석을 제공할 수 없습니다.',
+            };
         }
 
         return results as AnalysisResult;
     }
 
-    private async executeWithRetry<T>(operation: () => Promise<T>, maxRetries = 2): Promise<T> {
+// 헬퍼 메서드 추가
+    private getDefaultValue(analysisType: string): unknown {
+        const defaults: Record<string, unknown> = {
+            title_rewrite: { title: '제목 분석 실패' },
+            summary: { text: '요약 실패' },
+            keywords: { high_importance: [] },
+            difficulty: { level: 'unknown', reason: '분석 실패' },
+            expression: { expressions: [] },
+            thinking_questions: { questions: [] },
+        };
+
+        return defaults[analysisType] || {};
+    }
+
+    private async executeWithRetry<T>(operation: () => Promise<T>, maxRetries = 3): Promise<T> {
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 return await operation();
