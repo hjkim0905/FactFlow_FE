@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import puppeteer from "puppeteer";
 
 export async function extractFromUrl(url: string): Promise<{
 	title: string;
@@ -7,22 +8,25 @@ export async function extractFromUrl(url: string): Promise<{
 	publishDate?: string;
 }> {
 	try {
-		console.log("🔍 웹페이지 내용 추출 시작:", url);
+		console.log("🚀 Puppeteer 기반 추출 시작:", url);
 
-		const response = await fetch(url, {
-			headers: {
-				"User-Agent":
-					"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-				Accept:
-					"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			},
+		const browser = await puppeteer.launch({
+			headless: true,
+			args: ['--no-sandbox', '--disable-setuid-sandbox'],
+		});
+		const page = await browser.newPage();
+
+		await page.setUserAgent(
+			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+		);
+		page.setDefaultNavigationTimeout(30000);
+
+		await page.goto(url, {
+			waitUntil: ['domcontentloaded', 'networkidle2'],
+			timeout: 20000,
 		});
 
-		if (!response.ok) {
-			throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-		}
-
-		const html = await response.text();
+		const html = await page.content();
 		const $ = cheerio.load(html);
 
 		const title = extractTitle($);
@@ -30,11 +34,19 @@ export async function extractFromUrl(url: string): Promise<{
 		const publishDate = extractPublishDate($);
 		const content = extractMainContent($);
 
-		if (!content || content.trim().length < 100) {
-			throw new Error("추출된 내용이 너무 짧습니다");
+		await browser.close();
+
+		if (!content || content.length < 100) {
+			console.warn("📉 추출된 본문 내용이 너무 짧습니다.");
+			return {
+				title: title || "제목 없음",
+				content: "",
+				author,
+				publishDate,
+			};
 		}
 
-		console.log("✅ 웹페이지 내용 추출 완료");
+		console.log("✅ Puppeteer 기반 추출 완료");
 
 		return {
 			title: title || "제목 없음",
