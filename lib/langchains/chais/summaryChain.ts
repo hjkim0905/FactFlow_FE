@@ -6,6 +6,7 @@ export class SummaryChain extends BaseAnalysisChain {
     protected buildChain(): RunnableSequence {
         const summaryPrompt = PromptTemplate.fromTemplate(`
             다음 뉴스 기사를 단계별로 요약해주세요.
+            요약 내용은 15자 이내로 해주세요.
             
             기사 내용: {content}
             

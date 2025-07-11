@@ -71,6 +71,12 @@ function extractTitle($: cheerio.CheerioAPI): string {
 }
 
 function extractAuthor($: cheerio.CheerioAPI): string {
+	// 1. 네이버 뉴스 우선 처리 (data-date-time)
+	const naverAuthor = $('em.media_end_head_journalist_name').first().text().trim();
+	if (naverAuthor) {
+		return naverAuthor;
+	}
+
 	const selectors = [".author", ".byline", ".writer", '[rel="author"]'];
 
 	for (const selector of selectors) {
@@ -79,34 +85,13 @@ function extractAuthor($: cheerio.CheerioAPI): string {
 			return author;
 		}
 	}
+
+
 	return "";
 }
 
-// function extractPublishDate($: cheerio.CheerioAPI): string {
-// 	// 1. 네이버 뉴스 형식 우선 처리
-// 	const naverDate = $('span.media_end_head_info_datestamp_time._ARTICLE_DATE_TIME').attr('data-date-time');
-// 	if (naverDate) {
-// 		return naverDate.trim();
-// 	}
-// 	// 2. 일반적인 datetime 속성
-// 	const selectors = [".date", ".publish-date", "time[datetime]"];
-//
-// 	for (const selector of selectors) {
-// 		const dateElement = $(selector).first();
-// 		const date = dateElement.attr("datetime") || dateElement.text().trim();
-// 		if (date) {
-// 			return date;
-// 		}
-// 	}
-// 	// 3. body 전체에서 패턴 검색 (fallback)
-// 	const bodyText = $("body").text();
-// 	const fallbackMatch = bodyText.match(/\b\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2}\b/);
-// 	if (fallbackMatch) {
-// 		return fallbackMatch[0].replace(/-/g, ".").replace(/\//g, ".");
-// 	}
-//
-// 	return "";
-// }
+
+
 function extractPublishDate($: cheerio.CheerioAPI): string {
 	const normalizeDate = (input: string): string => {
 		// 1. YYYY.MM.DD 또는 YYYY-MM-DD 또는 YYYY/MM/DD 추출
