@@ -2,6 +2,8 @@ import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 
 interface RelatedArticle {
+	icon: string;
+	publisher: string;
 	title: string;
 	url: string;
 	summary: string;
@@ -15,6 +17,10 @@ export default function RelatedArticles({ articles }: RelatedArticlesProps) {
 	// articles가 undefined일 수 있으므로 안전하게 처리
 	const safeArticles = useMemo(() => articles || [], [articles]);
 
+	const cleanText = (text: string) =>
+		text
+			.replace(/\\?"/g, '"') // \" 또는 " → "
+			.replace(/^"+|"+$/g, ""); // 맨 앞/뒤 " 모두 제거
 	// 썸네일 상태: 각 기사별로 og:image URL 저장
 	const [thumbnails, setThumbnails] = useState<(string | null)[]>(() =>
 		Array.isArray(safeArticles) ? safeArticles.map(() => null) : [],
@@ -79,24 +85,20 @@ export default function RelatedArticles({ articles }: RelatedArticlesProps) {
 								target="_blank"
 								rel="noopener noreferrer"
 								className="flex flex-col min-w-[121px] max-w-[90vw] h-[142px] rounded-[12.09px] overflow-hidden cursor-pointer group transition-colors duration-200 bg-[#969696]"
-								style={{ width: 121, height: 142 }}
+								style={{ width: 131, height: 152 }}
 							>
 								{/* 상단: 원형 + 뉴스회사명, 배경 #D9D9D9 (hover시에도 그대로) */}
 								<div className="flex items-center px-3 py-2 bg-[#D9D9D9] transition-colors duration-200">
 									<div className="w-2 h-2 rounded-full bg-[#969696] transition-colors duration-200 group-hover:bg-[#0073FF]" />
-									<span className="ml-2 text-[6px] leading-[7.16px] font-semibold text-[#252525] font-pretendard">
-										{
-											article.url
-												.replace(/^https?:\/\/(www\.)?/, "")
-												.split("/")[0]
-										}
+									<span className="ml-2 text-[8px] leading-[7.16px] font-semibold text-[#252525] font-pretendard">
+										{article.publisher}
 									</span>
 								</div>
 								{/* 아래: 제목+썸네일 전체를 감싸는 영역, hover시 파란색 */}
 								<div className="flex-1 flex flex-col bg-[#969696] transition-colors duration-200 group-hover:bg-[#0073FF]">
 									<div className="px-3 pt-2 pb-1 h-[43px] flex items-start">
-										<div className="text-[8px] leading-[9.55px] font-semibold text-[#F7F7F7] font-pretendard break-words text-left w-full overflow-hidden">
-											{article.title}
+										<div className="text-[9px] leading-[9.55px] font-semibold text-[#F7F7F7] font-pretendard break-words text-left w-full overflow-hidden">
+											{cleanText(article.title)}
 										</div>
 									</div>
 									<div className="px-3 pb-2">

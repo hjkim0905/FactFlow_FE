@@ -18,7 +18,7 @@ export default function ReconsiderationPoint({
 					alt="alert"
 					className=" mt-[-10px] w-[40px] h-[40px]"
 				/>
-				<p className="ml-0.5 text-[12px] font-bold">
+				<p className="ml-0.5 text-[14px] font-bold">
 					다시 생각해볼 지점이 있어요!
 				</p>
 			</div>
@@ -26,7 +26,7 @@ export default function ReconsiderationPoint({
 				{safePoints.slice(0, 4).map((point, i) => (
 					<div
 						key={`point-${i}-${point.substring(0, 10)}`}
-						className="rounded-[50px] bg-[#696969] text-white flex items-center justify-center mb-2 text-[9px] font-[400] shadow-[inset_-7px_-26px_4px_0px_rgba(0,0,0,0.25)] px-5 py-5 min-h-[40px] min-w-[150px]"
+						className="rounded-[50px] bg-[#696969] text-white flex items-center justify-center mb-2 text-[11px] font-[400] shadow-[inset_-7px_-26px_4px_0px_rgba(0,0,0,0.25)] px-7 py-5 h-[67px] w-[160px]"
 					>
 						{i + 1}. {point}
 					</div>
