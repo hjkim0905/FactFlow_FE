@@ -30,6 +30,7 @@ export interface NewsAnalysisResponse {
             one_sentence: string;
             three_sentences: string[];
             five_sentences: string[];
+            five_sentences_explanations?: string[];
         };
         keywords: {
             high_importance: Keyword[];
@@ -53,11 +54,16 @@ export interface NewsAnalysisResponse {
             bias_score: number;
             'percentage of objective statement': number;
             'percentage of subjective statement': number;
+            objective_words_used: string[];
+            subjective_words_used: string[];
         };
         thinking_questions: {
             causal_questions?: string[];
+            causal_explanations?: string[];
             prediction_questions?: string[];
+            prediction_explanations?: string[];
             perspective_questions?: string[];
+            perspective_explanations?: string[];
         };
         complementary_insight: {
             complementary_articles: ComplementaryArticle[];

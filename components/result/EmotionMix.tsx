@@ -3,9 +3,16 @@ import React from 'react';
 interface EmotionMixProps {
     objectivePercent: number;
     subjectivePercent: number;
+    objectiveWords?: string[];
+    subjectiveWords?: string[];
 }
 
-export default function EmotionMix({ objectivePercent, subjectivePercent }: EmotionMixProps) {
+export default function EmotionMix({
+    objectivePercent,
+    subjectivePercent,
+    objectiveWords,
+    subjectiveWords,
+}: EmotionMixProps) {
     // Dynamic size calculation
     const minWidth = 60;
     const maxWidth = 140;
@@ -25,6 +32,30 @@ export default function EmotionMix({ objectivePercent, subjectivePercent }: Emot
     const totalWidth = leftWidth + rightWidth + gap;
     const dividerExtra = 32;
     const maxHalfHeight = Math.max(leftHeight, rightHeight);
+
+    function formatWordList(words: string[] = [], maxLines = 2, maxWordsPerLine = 3) {
+        if (!words || words.length === 0) return '';
+        const lines: string[] = [];
+        let i = 0;
+        for (let line = 0; line < maxLines && i < words.length; line++) {
+            const lineWords = [];
+            for (let w = 0; w < maxWordsPerLine && i < words.length; w++, i++) {
+                lineWords.push(`<span style=\"white-space:nowrap\">${words[i]}</span>`);
+            }
+            lines.push(lineWords.join(', '));
+        }
+        // 남은 단어가 있으면 마지막 줄 끝에 ' 등' 추가 (줄이 꽉 차면 마지막 단어를 빼고 ' 등'을 붙임)
+        if (i < words.length) {
+            const lastLine = lines[lines.length - 1].split(', ');
+            if (lastLine.length > 1) {
+                lastLine.pop();
+                lines[lines.length - 1] = lastLine.join(', ') + ' 등';
+            } else {
+                lines[lines.length - 1] = lastLine[0] + ' 등';
+            }
+        }
+        return lines.join('<br />');
+    }
 
     return (
         <div className="p-6 text-black flex flex-col items-center -mt-5">
@@ -120,11 +151,21 @@ export default function EmotionMix({ objectivePercent, subjectivePercent }: Emot
                     </div>
                     <div
                         className="font-pretendard font-medium mt-1 text-center"
-                        style={{ fontSize: 8.25, lineHeight: '10px', color: '#AFAFAF', width: '100%' }}
-                    >
-                        수사 진행 사실,
-                        <br />양 당 입장 등
-                    </div>
+                        style={{
+                            fontSize: 8.25,
+                            lineHeight: '10px',
+                            color: '#AFAFAF',
+                            width: '100%',
+                            whiteSpace: 'normal',
+                            overflow: 'hidden',
+                        }}
+                        dangerouslySetInnerHTML={{
+                            __html:
+                                objectiveWords && objectiveWords.length > 0
+                                    ? formatWordList(objectiveWords)
+                                    : '수사 진행 사실, 양 당 입장 등',
+                        }}
+                    />
                 </div>
                 <div className="flex flex-col items-center" style={{ width: rightWidth, marginLeft: gap }}>
                     <div
@@ -135,12 +176,21 @@ export default function EmotionMix({ objectivePercent, subjectivePercent }: Emot
                     </div>
                     <div
                         className="font-pretendard font-medium mt-1 text-center"
-                        style={{ fontSize: 8.25, lineHeight: '10px', color: '#AFAFAF', width: '100%' }}
-                    >
-                        보복, 탄압,
-                        <br />
-                        격렬한 대립 등
-                    </div>
+                        style={{
+                            fontSize: 8.25,
+                            lineHeight: '10px',
+                            color: '#AFAFAF',
+                            width: '100%',
+                            whiteSpace: 'normal',
+                            overflow: 'hidden',
+                        }}
+                        dangerouslySetInnerHTML={{
+                            __html:
+                                subjectiveWords && subjectiveWords.length > 0
+                                    ? formatWordList(subjectiveWords)
+                                    : '보복, 탄압, 격렬한 대립 등',
+                        }}
+                    />
                 </div>
             </div>
         </div>

@@ -159,6 +159,8 @@ export default function NewsAnalysisResults({ result, setUrl, handlePaste, loadi
             <EmotionMix
                 objectivePercent={expression['percentage of objective statement'] ?? 0}
                 subjectivePercent={expression['percentage of subjective statement'] ?? 0}
+                objectiveWords={expression.objective_words_used}
+                subjectiveWords={expression.subjective_words_used}
             />
             <RelatedArticles
                 articles={(complementaryInsight.complementary_articles || []).map((a) => ({
@@ -175,9 +177,17 @@ export default function NewsAnalysisResults({ result, setUrl, handlePaste, loadi
                     ...(thinkingQuestions.prediction_questions || []),
                     ...(thinkingQuestions.perspective_questions || []),
                 ]}
+                explanations={[
+                    ...(thinkingQuestions.causal_explanations || []),
+                    ...(thinkingQuestions.prediction_explanations || []),
+                    ...(thinkingQuestions.perspective_explanations || []),
+                ]}
             />
             <Warning />
-            <ReconsiderationPoint points={summary.five_sentences || []} />
+            <ReconsiderationPoint
+                points={summary.five_sentences || []}
+                explanations={summary.five_sentences_explanations || []}
+            />
             <Warning />
             <DeepConnectionInfo
                 infos={(complementaryInsight.complementary_articles || []).map((a) => ({

@@ -53,6 +53,8 @@ export default function RelatedArticles({ articles }: RelatedArticlesProps) {
         });
     }, [safeArticles]);
 
+    const FALLBACK_IMAGE = '/file.svg';
+
     return (
         <>
             <div className="p-6 text-black" style={{ background: '#2C2C2C', height: '343px', maxWidth: '100%' }}>
@@ -127,12 +129,17 @@ export default function RelatedArticles({ articles }: RelatedArticlesProps) {
                                     </div>
                                     <div className="px-3 pb-2">
                                         <Image
-                                            src={thumbnails[idx] || '/vercel.svg'}
+                                            src={thumbnails[idx] || FALLBACK_IMAGE}
                                             alt={article.title}
                                             width={115}
                                             height={60}
                                             className="w-full h-[60px] object-cover rounded-[8px]"
                                             unoptimized
+                                            onError={(e) => {
+                                                if (e.currentTarget.src !== FALLBACK_IMAGE) {
+                                                    e.currentTarget.src = FALLBACK_IMAGE;
+                                                }
+                                            }}
                                         />
                                     </div>
                                 </div>
