@@ -21,7 +21,9 @@ export class ExpressionAnalysisChain extends BaseAnalysisChain {
                 "bias_score": 1 (neutral) - 5 (extremely biased),
                 "percentage of objective statement": 0 - 100 %,
                 "percentage of subjective statement" : 0 - 100%,
-                "sum of percentage of objective statement and subjective statement should be 100"
+                "sum of percentage of objective statement and subjective statement should be 100",
+                "objective_words_used": [],
+                "subjective_words_used": [],
             }}
         `);
 

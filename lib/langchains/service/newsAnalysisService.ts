@@ -10,8 +10,6 @@ import { KeywordExtractionChain } from "@/lib/langchains/chains/keywordExtractio
 import { DifficultyAnalysisChain } from "@/lib/langchains/chains/difficiltyAnalysisChain";
 import { ExpressionAnalysisChain } from "@/lib/langchains/chains/expressionAnalysisChain";
 import { ThinkingQuestionChain } from "@/lib/langchains/chains/thinkingQuestionChain";
-//import { HistoricalConnectionChain } from "@/lib/langchains/chais/historicalConnectionChain";
-//import { HistoricalNewsPipeline } from "@/lib/pipelines/HistoricalNewsPipeline"; //
 import { ComplementaryInsightChain } from "../chains/complementaryInsightChain";
 import type {
 	SupportedAIModel,
@@ -37,11 +35,8 @@ export class NewsAnalysisService {
 		difficulty: DifficultyAnalysisChain;
 		expression: ExpressionAnalysisChain;
 		questions: ThinkingQuestionChain;
-		//historical: HistoricalConnectionChain;
 		complementary: ComplementaryInsightChain;
 	};
-
-	//private historicalPipeline: HistoricalNewsPipeline;
 
 	constructor(modelType?: SupportedAIModel, apiKey?: string) {
 		if (modelType && apiKey) {
@@ -64,7 +59,6 @@ export class NewsAnalysisService {
 			difficulty: new DifficultyAnalysisChain(this.model),
 			expression: new ExpressionAnalysisChain(this.model),
 			questions: new ThinkingQuestionChain(this.model),
-			//historical: new HistoricalConnectionChain(this.model),
 			complementary: new ComplementaryInsightChain(this.model),
 		};
 		console.log("✅ 모든 체인 초기화 완료");
@@ -124,7 +118,6 @@ export class NewsAnalysisService {
 		title = "",
 	): Promise<AnalysisResult> {
 		const input = { content, title };
-		//const results: Partial<AnalysisResult> = {}; // ✅ 변수 선언 추가
 		const results: Record<string, unknown> = {};
 		console.log("📊 전체 분석 병렬 실행 중...");
 
@@ -143,33 +136,39 @@ export class NewsAnalysisService {
 				let result;
 				switch (analysisType) {
 					case "title_rewrite":
-						result = await this.executeWithRetry(() =>
-							this.chains.title.invoke(input),
+						result = await this.executeWithRetry(
+							() => this.chains.title.invoke(input),
+							analysisType
 						);
 						break;
 					case "summary":
-						result = await this.executeWithRetry(() =>
-							this.chains.summary.invoke(input),
+						result = await this.executeWithRetry(
+							() => this.chains.summary.invoke(input),
+							analysisType
 						);
 						break;
 					case "keywords":
-						result = await this.executeWithRetry(() =>
-							this.chains.keywords.invoke(input),
+						result = await this.executeWithRetry(
+							() => this.chains.keywords.invoke(input),
+							analysisType
 						);
 						break;
 					case "difficulty":
-						result = await this.executeWithRetry(() =>
-							this.chains.difficulty.invoke(input),
+						result = await this.executeWithRetry(
+							() => this.chains.difficulty.invoke(input),
+							analysisType
 						);
 						break;
 					case "expression":
-						result = await this.executeWithRetry(() =>
-							this.chains.expression.invoke(input),
+						result = await this.executeWithRetry(
+							() => this.chains.expression.invoke(input),
+							analysisType
 						);
 						break;
 					case "thinking_questions":
-						result = await this.executeWithRetry(() =>
-							this.chains.questions.invoke(input),
+						result = await this.executeWithRetry(
+							() => this.chains.questions.invoke(input),
+							analysisType
 						);
 						break;
 				}
@@ -177,7 +176,7 @@ export class NewsAnalysisService {
 				results[analysisType] = result;
 				console.log(`✅ ${analysisType} 완료`);
 			} catch (error) {
-				console.warn(`❌ ${analysisType} 분석 실패:`, error);
+				console.error(`❌ ${analysisType} 분석 실패:`, error);
 				results[analysisType] = this.getDefaultValue(analysisType);
 			}
 		});
@@ -185,8 +184,8 @@ export class NewsAnalysisService {
 		// 기본 분석들 완료 대기
 		await Promise.all(basicTasks);
 
-		// 🔍 요약/키워드 후속 처리 (기본 분석 결과 필요)
-		let summary = input.content.slice(0, 300); // 기본값
+		// 요약/키워드 후속 처리
+		let summary = input.content.slice(0, 300);
 		if (
 			results.summary &&
 			typeof results.summary === "object" &&
@@ -216,33 +215,52 @@ export class NewsAnalysisService {
 			similarArticles = [];
 		}
 
-		// ✅ 보완 인사이트 (의존성 있는 분석)
+		// 보완 인사이트 (의존성 있는 분석) - 수정된 부분
 		try {
 			if (similarArticles.length > 0 && keywords.length > 0) {
-				results.complementary_insight = (await this.executeWithRetry(() =>
-					this.chains.complementary.run({
-						articles: similarArticles,
-						keywords,
-					}),
-				)) as NewsAnalysisResponse["analysis"]["complementary_insight"];
+				console.log("🔍 보완 인사이트 분석 시작...");
+
+				// ComplementaryInsightChain 실행 시 추가 검증
+				const complementaryResult = await this.executeWithRetry(
+					async () => {
+						const result = await this.chains.complementary.run({
+							articles: similarArticles,
+							keywords,
+						});
+
+						// 결과 구조 검증
+						if (this.isValidComplementaryResult(result)) {
+							return result;
+						} else {
+							throw new Error("보완 인사이트 결과 구조가 올바르지 않습니다");
+						}
+					},
+					"complementary_insight",
+					2 // 재시도 횟수를 2로 줄임
+				);
+
+				results.complementary_insight = complementaryResult;
+				console.log("✅ 보완 인사이트 분석 완료");
 			} else {
+				console.log("⚠️ 보완 인사이트 분석 건너뛰기 - 관련 기사 또는 키워드 부족");
 				results.complementary_insight = {
 					complementary_articles: [],
 					insight: "관련 기사를 찾을 수 없어 보완 분석을 제공할 수 없습니다.",
 				};
 			}
 		} catch (error) {
-			console.warn("⚠️ 보완 인사이트 실패:", error);
+			console.error("❌ 보완 인사이트 최종 실패:", error);
 			results.complementary_insight = {
 				complementary_articles: [],
 				insight: "보완 분석을 제공할 수 없습니다.",
+				error: error instanceof Error ? error.message : String(error)
 			};
 		}
 
 		return results as AnalysisResult;
 	}
 
-	// 헬퍼 메서드 추가
+	// 헬퍼 메서드
 	private getDefaultValue(analysisType: string): unknown {
 		const defaults: Record<string, unknown> = {
 			title_rewrite: { title: "제목 분석 실패" },
@@ -258,25 +276,62 @@ export class NewsAnalysisService {
 
 	private async executeWithRetry<T>(
 		operation: () => Promise<T>,
-		maxRetries = 3,
+		operationName: string,
+		maxRetries = 3
 	): Promise<T> {
+		let lastError: Error | null = null;
+
 		for (let attempt = 1; attempt <= maxRetries; attempt++) {
 			try {
-				return await operation();
-			} catch (error: unknown) {
-				if (attempt === maxRetries) {
-					console.warn(
-						`최종 실패: ${error instanceof Error ? error.message : String(error)}`,
-					);
-					return {} as T; // 기본값 반환
+				const result = await operation();
+
+				// 결과 검증: 빈 객체나 null/undefined 체크
+				if (this.isValidResult(result)) {
+					console.log(`✅ ${operationName} 시도 ${attempt}/${maxRetries} 성공`);
+					return result;
+				} else {
+					throw new Error(`Invalid result: ${JSON.stringify(result)}`);
 				}
-				console.warn(
-					`재시도 ${attempt}/${maxRetries}: ${error instanceof Error ? error.message : String(error)}`,
-				);
-				await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+			} catch (error: unknown) {
+				lastError = error instanceof Error ? error : new Error(String(error));
+				const message = lastError.message;
+
+				console.warn(`⚠️ ${operationName} 재시도 ${attempt}/${maxRetries} 실패: ${message}`);
+
+				// JSON 파싱 오류인 경우 특별 처리
+				if (message.includes('JSON 파싱 실패')) {
+					console.error(`❌ ${operationName} JSON 파싱 오류 상세:`, {
+						error: message,
+						attempt,
+						operationName
+					});
+				}
+
+				if (attempt < maxRetries) {
+					// 지수 백오프
+					await new Promise((resolve) => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
+				}
 			}
 		}
-		return {} as T;
+
+		// 모든 재시도가 실패한 경우
+		console.error(`❌ ${operationName} 최종 실패 (${maxRetries}/${maxRetries}): ${lastError?.message}`);
+		throw lastError || new Error(`${operationName} 실행 실패`);
+	}
+
+	private isValidResult(result: unknown): boolean {
+		if (result === null || result === undefined) {
+			return false;
+		}
+
+		if (typeof result === "object") {
+			// 빈 객체 체크
+			if (Object.keys(result as object).length === 0) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	async runSingleAnalysis(
@@ -299,10 +354,36 @@ export class NewsAnalysisService {
 				return await this.chains.expression.invoke(input);
 			case "questions":
 				return await this.chains.questions.invoke(input);
-			//case "historical": return await this.chains.historical.invoke(input);
 			default:
 				throw new Error(`지원하지 않는 분석 유형: ${type}`);
 		}
+	}
+
+	// 보완 인사이트 결과 검증 메서드 추가
+	private isValidComplementaryResult(result: unknown): boolean {
+		if (!result || typeof result !== "object") {
+			return false;
+		}
+
+		const complementaryResult = result as any;
+
+		// 필수 필드 검증
+		if (!complementaryResult.hasOwnProperty('complementary_articles') ||
+			!complementaryResult.hasOwnProperty('insight')) {
+			return false;
+		}
+
+		// complementary_articles가 배열인지 확인
+		if (!Array.isArray(complementaryResult.complementary_articles)) {
+			return false;
+		}
+
+		// insight가 문자열인지 확인
+		if (typeof complementaryResult.insight !== 'string') {
+			return false;
+		}
+
+		return true;
 	}
 
 	private formatTime(ms: number): string {
