@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "NEWSEE",
     "version": "1.0",
-    "description": "NEWSEE 사이드 패널 익스텐션",
+    "description": "NEWSEE 뉴스를 핵심만, 쉽게, 다시, 보다",
     "permissions": ["sidePanel"],
     "side_panel": {
         "default_path": "sidepanel.html",
@@ -14,5 +14,10 @@
     },
     "action": {
         "default_title": "Click to open side panel"
+    },
+    "icons": {
+        "16": "icon-16.png",
+        "48": "icon-48.png",
+        "128": "icon-128.png"
     }
 }
