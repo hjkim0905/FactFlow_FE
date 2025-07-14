@@ -49,11 +49,6 @@ export class SummaryChain extends BaseAnalysisChain {
     }
 
     protected parseResult(result: string): unknown {
-        return this.parseJsonSafely(result, {
-            one_sentence: '요약 생성 실패',
-            three_sentences: ['요약 실패'],
-            five_sentences: ['요약 실패'],
-            five_sentences_explanations: ['요약 실패'],
-        });
+        return this.parseJsonSafely(result);
     }
 }

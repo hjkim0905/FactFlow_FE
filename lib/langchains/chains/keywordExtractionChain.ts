@@ -39,10 +39,6 @@ export class KeywordExtractionChain extends BaseAnalysisChain {
     }
 
     protected parseResult(result: string): unknown {
-        return this.parseJsonSafely(result, {
-            high_importance: [],
-            medium_importance: [],
-            low_importance: [],
-        });
+        return this.parseJsonSafely(result);
     }
 }

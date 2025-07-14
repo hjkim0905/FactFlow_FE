@@ -56,13 +56,6 @@ export class ThinkingQuestionChain extends BaseAnalysisChain {
     }
 
     protected parseResult(result: string): unknown {
-        return this.parseJsonSafely(result, {
-            causal_questions: [],
-            casual_explanations: [],
-            prediction_questions: [],
-            prediction_explanations: [],
-            perspective_questions: [],
-            perspective_explanations: [],
-        });
+        return this.parseJsonSafely(result);
     }
 }

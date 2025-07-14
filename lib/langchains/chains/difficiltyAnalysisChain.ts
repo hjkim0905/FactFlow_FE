@@ -25,11 +25,6 @@ export class DifficultyAnalysisChain extends BaseAnalysisChain {
     }
 
     protected parseResult(result: string): unknown {
-        return this.parseJsonSafely(result, {
-            level: '중급',
-            score: 5,
-            icon: '🟡',
-            reading_tips: [],
-        });
+        return this.parseJsonSafely(result);
     }
 }

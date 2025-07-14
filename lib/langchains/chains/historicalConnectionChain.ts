@@ -50,10 +50,6 @@ export class HistoricalConnectionChain extends BaseAnalysisChain {
     }
 
     protected parseResult(result: string): HistoricalConnectionResult {
-        return this.parseJsonSafely(result, {
-            similar_events: [],
-            patterns: '분석 실패',
-            lessons: [],
-        }) as HistoricalConnectionResult;
+        return this.parseJsonSafely(result) as HistoricalConnectionResult;
     }
 }
