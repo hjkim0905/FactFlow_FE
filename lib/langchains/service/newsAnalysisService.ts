@@ -258,7 +258,7 @@ export class NewsAnalysisService {
 
 	private async executeWithRetry<T>(
 		operation: () => Promise<T>,
-		maxRetries = 3,
+		maxRetries = 10,
 	): Promise<T> {
 		for (let attempt = 1; attempt <= maxRetries; attempt++) {
 			try {
