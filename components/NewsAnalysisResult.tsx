@@ -75,7 +75,7 @@ export default function NewsAnalysisResults({ result, setUrl, handlePaste, loadi
     return (
         <div className="flex flex-col ">
             {/* 헤더와 새로운 URL 입력 */}
-            <div className="sticky top-0 z-10 bg-gray-50">
+            <div className="sticky top-0 z-50 bg-gray-50">
                 {/* URL 입력창 */}
                 <div className="flex flex-col items-center mt-3 mb-4">
                     <div className="relative flex items-center gap-2">
