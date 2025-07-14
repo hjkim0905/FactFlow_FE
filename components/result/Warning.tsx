@@ -41,6 +41,7 @@ const WarningSet = () => (
                 minWidth: '2.5rem',
                 display: 'inline-block',
                 textAlign: 'left',
+                fontFamily: 'Pretendard',
             }}
         >
             NEWSEE
@@ -55,6 +56,7 @@ const WarningSet = () => (
                 minWidth: '2.7rem',
                 display: 'inline-block',
                 textAlign: 'left',
+                fontFamily: 'Pretendard',
             }}
         >
             WARNING
